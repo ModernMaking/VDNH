@@ -1,0 +1,73 @@
+[
+(?entrance rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#Entrance)
+makeSkolem(?routeNode, ?entrance)
+->
+(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#RouteNode)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasAccordingObject ?entrance)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalPoint 0)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalTime 0)
+]
+
+[
+noValue(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#InterruptNode)
+(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#RouteNode)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasAccordingObject ?point)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalTime ?time)
+lessThan(?time, 10)
+(?road http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#startsFrom ?point)
+(?road http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasLength ?len)
+(?road http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#finishesTo ?point2)
+quotient(?len, 83, ?roadTime)
+sum(?time, ?roadTime, ?newTime)
+makeSkolem(?routeNode2, ?routeNode, ?point2)
+->
+(?routeNode2 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#RouteNode)
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasAccordingObject ?point2)
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalPoint 0)
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalTime ?newTime)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasNext ?routeNode2)
+
+]
+
+[
+(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#InterruptNode)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalTime ?time)
+->
+print("Route time: ",?time)
+]
+
+[
+noValue(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#InterruptNode)
+(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#RouteNode)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasAccordingObject ?point)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalTime ?time)
+lessThan(?time, 10)
+(?road http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#finishesTo ?point)
+(?road http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasLength ?len)
+(?road http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#startsFrom ?point2)
+quotient(?len, 83, ?roadTime)
+sum(?time, ?roadTime, ?newTime)
+makeSkolem(?routeNode2, ?routeNode, ?point2)
+->
+(?routeNode2 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#RouteNode)
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasAccordingObject ?point2)
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalPoint 0)
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasTotalTime ?newTime)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasNext ?routeNode2)
+
+]
+
+[
+(?routeNode2 http://www.semanticweb.org/dns/ontologies/2022/8/route#hasNext ?routeNode)
+->
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasPrevious ?routeNode2)
+]
+
+[
+(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#RouteNode)
+(?entrance rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#Entrance)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasAccordingObject ?entrance)
+(?routeNode http://www.semanticweb.org/dns/ontologies/2022/8/route#hasPrevious ?routeNode2)
+->
+(?routeNode rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/route#InterruptNode)
+]
