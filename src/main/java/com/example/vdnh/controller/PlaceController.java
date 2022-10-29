@@ -209,10 +209,14 @@ public class PlaceController {
     }
 
     @GetMapping("/byTags")
-    public List<String> getPlaceIdsByTags(@RequestBody JsonObject requestParams)
+    public List<String> getPlaceIdsByTags(@RequestBody String requestParams)
     {
         System.out.println(requestParams);
-        JsonArray arr = requestParams.get("tagIds").getAsJsonArray();
+
+
+        Gson gson = new Gson();
+
+        JsonArray arr = gson.fromJson(requestParams,JsonObject.class).get("tagIds").getAsJsonArray();
         List<Integer> tagIds = new ArrayList<>();
 
         arr.forEach(new Consumer<JsonElement>() {
