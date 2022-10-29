@@ -67,7 +67,7 @@ public class PlaceController {
 
 
 
-        JSONParser parser = new JSONParser(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
+        JSONParser parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() + "../classes/export.json"));
 
 
         Object obj = parser.parse();//parseObject();//parse();//parse(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
