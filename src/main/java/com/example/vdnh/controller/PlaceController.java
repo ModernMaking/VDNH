@@ -5,12 +5,16 @@ import com.example.vdnh.repo.PlaceRepository;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.jsonldjava.utils.Obj;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.swagger.models.auth.In;
 import ontology.Model;
 import org.apache.jena.base.Sys;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
+
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +38,7 @@ import java.beans.Customizer;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 @RestController
 @RequestMapping("/place")
@@ -204,15 +209,20 @@ public class PlaceController {
     }
 
     @GetMapping("/byTags")
-    public List<String> getPlaceIdsByTags(@RequestBody JSONObject requestParams)
+    public List<String> getPlaceIdsByTags(@RequestBody JsonObject requestParams)
     {
-        List<Object> tagIds = requestParams.getJSONArray("tagIds").toList();
-        List<Integer> tagIdsInteger = new ArrayList<>();
-        for (Object o: tagIds) {
-            Integer i = (Integer) o;
-            tagIdsInteger.add(i);
-        }
-        return Model.getModel().findInterestedPlaces(tagIdsInteger);
+        System.out.println(requestParams);
+        JsonArray arr = requestParams.get("tagIds").getAsJsonArray();
+        List<Integer> tagIds = new ArrayList<>();
+
+        arr.forEach(new Consumer<JsonElement>() {
+            @Override
+            public void accept(JsonElement jsonElement) {
+                tagIds.add(jsonElement.getAsInt());
+            }
+        });
+
+        return Model.getModel().findInterestedPlaces(tagIds);
     }
 
     //!!! Получить погоду на заданный день
