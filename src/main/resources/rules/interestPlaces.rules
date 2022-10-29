@@ -1,0 +1,16 @@
+[
+    (?r rdf:type http://www.semanticweb.org/dns/ontologies/2022/9/request#Request)
+    (?p rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#Place)
+    (?t rdf:type http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#InterestTag)
+    (?r http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasInterestTag ?t)
+    (?p http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasInterestTag ?t)
+    ->
+    (?r http://www.semanticweb.org/dns/ontologies/2022/9/request#hasInterestingPlace ?p)
+    print("INTEREST PLACE")
+]
+
+[
+    (?r rdf:type http://www.semanticweb.org/dns/ontologies/2022/9/request#Request)
+    ->
+    print("INTEREST PLACE")
+]

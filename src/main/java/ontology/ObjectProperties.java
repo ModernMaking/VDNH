@@ -14,4 +14,11 @@ public class ObjectProperties {
         public static String HAS_PREVIOUS = "http://www.semanticweb.org/dns/ontologies/2022/8/route#hasPrevious";
         public static String HAS_NEXT = "http://www.semanticweb.org/dns/ontologies/2022/8/route#hasNext";
     }
+
+    public static class Tag
+    {
+        public static String HAS_INTEREST_TAG = "http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasInterestTag";
+        public static String HAS_GEO_TAG = "http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasGeoTag";
+        public static String HAS_CHILD = "http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasChild";
+    }
 }

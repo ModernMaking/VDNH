@@ -2,9 +2,12 @@ package com.example.vdnh.controller;
 
 import com.example.vdnh.model.Place;
 import com.example.vdnh.repo.PlaceRepository;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.jsonldjava.utils.Obj;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.swagger.models.auth.In;
+import ontology.Model;
 import org.apache.jena.base.Sys;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
@@ -13,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,8 +68,7 @@ public class PlaceController {
 
 
         JSONParser parser = new JSONParser(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
-        //JSONObject jsonObject1 = new JSONObject("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json");
-        //System.out.println(jsonObject1);
+
 
         Object obj = parser.parse();//parseObject();//parse();//parse(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
         String jsonInString = new Gson().toJson(obj);
@@ -174,12 +177,42 @@ public class PlaceController {
         return placeRepository.getToiletsNear(latitude,longitude);
     }
 
+    @GetMapping("/busStationNear")
+    public List<Object> getBusStationsNear(double latitude, double longitude)
+    {
+        return placeRepository.getBusStationsNear(latitude,longitude);
+    }
+
+    @GetMapping("/allStations")
+    public List<Place> getAllBusStations()
+    {
+        return placeRepository.findAllByType("Остановка");
+    }
+
 
     //!!! Метод для получения всех меток для карты
     @GetMapping("/all")
     public List<Place> getAllPlaces()
     {
-        return new ArrayList<>();
+        return placeRepository.findAllByLatitudeAfterAndLongitudeAfter(0,0);
+    }
+
+    @GetMapping("/allLines")
+    public List<List<Double>> getAllLines()
+    {
+        return Model.getModel().getAllLines();
+    }
+
+    @GetMapping("/byTags")
+    public List<String> getPlaceIdsByTags(@RequestBody JSONObject requestParams)
+    {
+        List<Object> tagIds = requestParams.getJSONArray("tagIds").toList();
+        List<Integer> tagIdsInteger = new ArrayList<>();
+        for (Object o: tagIds) {
+            Integer i = (Integer) o;
+            tagIdsInteger.add(i);
+        }
+        return Model.getModel().findInterestedPlaces(tagIdsInteger);
     }
 
     //!!! Получить погоду на заданный день

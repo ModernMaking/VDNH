@@ -50,6 +50,12 @@
     
 
 
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasID -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasID"/>
+    
+
+
     <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasLatitude -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasLatitude"/>
@@ -82,6 +88,12 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#Distance -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#Distance"/>
     
 
 

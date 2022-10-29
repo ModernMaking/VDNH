@@ -7,11 +7,14 @@ import net.minidev.json.parser.ParseException;
 import ontology.Model;
 import org.apache.jena.atlas.json.JSON;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.platform.commons.annotation.Testable;
 
 import java.beans.Customizer;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -21,8 +24,19 @@ public class ModelTests {
     @Test
     public void test1()
     {
-        Model m = new Model();
+        Model m = Model.getModel();
         m.calcRoute();
+    }
+
+    @Test
+    public void test3()
+    {
+        Model m = Model.getModel();
+        List<Integer> tagIds = new ArrayList<>();
+        tagIds.add(10);
+        tagIds.add(1);
+        List<String> placeIds = m.findInterestedPlaces(tagIds);
+        System.out.println(placeIds);
     }
 
     @Test
