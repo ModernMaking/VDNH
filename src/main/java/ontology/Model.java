@@ -11,6 +11,7 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFWriter;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
@@ -42,6 +43,8 @@ public class Model {
 
     public static String INTERESTED_PLACES_RULES = "rules/interestPlaces.rules";
 
+    public static String BUS_RULES = "rules/bus.rules";
+
     org.apache.jena.rdf.model.Model mapModel = null;
 
     org.apache.jena.rdf.model.Model tagModel = null;
@@ -55,6 +58,8 @@ public class Model {
     Reasoner routeReasoner = null;
 
     Reasoner interestedPlacesReasoner = null;
+
+    Reasoner busReasoner = null;
 
     HashMap<String,Resource> places = new HashMap<>();
 
@@ -294,19 +299,12 @@ public class Model {
             }
         });
 
-        /*mJSONarray.forEach(new Consumer<Object>() {
-            @Override
-            public void accept(Object o) {
-                Resource busStop = places.get(o.toString());
-            }
-
-            @Override
-            public Consumer<Object> andThen(Consumer<? super Object> after) {
-                return Consumer.super.andThen(after);
-            }
-        });*/
+        InfModel infModel = ModelFactory.createInfModel(busReasoner, ontologyModel);
+        ontologyModel.add(infModel.difference(ontologyModel));
 
     }
+
+
 
 
 
@@ -339,14 +337,16 @@ public class Model {
 
         routeReasoner = createReasonerForInteraction(ROUTE_RULES);
         interestedPlacesReasoner = createReasonerForInteraction(INTERESTED_PLACES_RULES);
+        busReasoner = createReasonerForInteraction(BUS_RULES);
 
         addPlaces();
-        addInterests();
-        addTagsToPlaces();
-        calcAllDistances();
-        addTagsSimilarities();
+        //addInterests();
+        //addTagsToPlaces();
+        //calcAllDistances();
+        //addTagsSimilarities();
         addBusRoutes();
-        //ontologyModel.write(System.out);
+        calcNearestBusStations();
+        ontologyModel.write(System.out);
     }
 
     public Resource addRoad(Resource node1, Resource node2, double length)
@@ -426,14 +426,25 @@ public class Model {
     {
         Individual r = ontologyModel.createIndividual(ontologyModel.createResource());
         r.setOntClass(ontologyModel.getOntClass(OntologyClasses.Map.BUS_ROUTE));
-        Resource station0 = places.get(stations.get(0));
-        r.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_FIRST_STATION),station0);
-        for (int i=1; i<stations.size(); i++)
+
+        List<Resource> busRouteNodes = new ArrayList<>();
+
+        for (int i=0; i<stations.size(); i++)
         {
             Resource station = places.get(stations.get(i));
-            Resource prevStation = places.get(stations.get(i-1));
-            prevStation.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_STATION),station);
+            Individual busRouteNode = ontologyModel.createIndividual(ontologyModel.createResource());
+            busRouteNode.setOntClass(ontologyModel.getOntClass(OntologyClasses.Map.BUS_ROUTE_NODE));
+            busRouteNode.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION),station);
+            r.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_BUS_ROUTE_NODE),busRouteNode);
+            busRouteNode.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.OF_ROUTE),r);
+            busRouteNodes.add(busRouteNode);
         }
+        r.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_FIRST_BUS_ROUTE_NODE),busRouteNodes.get(0));
+        for (int i=1; i< busRouteNodes.size(); i++)
+        {
+            busRouteNodes.get(i-1).addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_BUS_ROUTE_NODE),busRouteNodes.get(i));
+        }
+
         return r;
     }
 
@@ -553,6 +564,64 @@ public class Model {
         return order;
     }
 
+    public void calcNearestBusStations()
+    {
+        for (String id: places.keySet())
+        {
+            calcNearestBusStations(id);
+        }
+    }
+    public void calcNearestBusStations(String id)
+    {
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> "+
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/9/request#> "+
+                "PREFIX f: <http://www.ontotext.com/sparql/functions/>"+
+
+                "SELECT ?p ?p2  ?p3 ((( 0.56*0.56*(?lon-?lon2)*(?lon-?lon2)+(?lat-?lat2)*(?lat-?lat2))) as ?dist1) ((( 0.56*0.56*(?lon-?lon3)*(?lon-?lon3)+(?lat-?lat3)*(?lat-?lat3))) as ?dist2)"+
+                "WHERE { "+
+                " ?p a mo:Place ."+
+                " ?p mo:hasID \""+id+"\" . "+
+                " ?p mo:hasLongitude ?lon . "+
+                " ?p mo:hasLatitude ?lat . "+
+
+                " ?p2 a mo:BusStop ."+
+                " ?p2 mo:hasID ?id2 . "+
+                " ?p2 mo:hasLongitude ?lon2 . "+
+                " ?p2 mo:hasLatitude ?lat2 . "+
+                " ?brn1 mo:ofRoute ?r1 ."+
+                "?brn1 mo:hasAccordingStation ?p2 ."+
+
+                " ?p3 a mo:BusStop ."+
+                " ?p3 mo:hasID ?id3 . "+
+                " ?p3 mo:hasLongitude ?lon3 . "+
+                " ?p3 mo:hasLatitude ?lat3 . "+
+                " ?brn2 mo:ofRoute ?r2 ."+
+                "?brn2 mo:hasAccordingStation ?p3 ."+
+
+                "FILTER (?r1 != ?r2)"+
+
+                "}"+
+                "ORDER BY ASC(?dist) ASC(?dist2) LIMIT 1";
+
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+
+        while (rs.hasNext()) {
+            QuerySolution qs = rs.next();
+            Resource place = qs.getResource("p");
+            Resource busStop = qs.getResource("p2");
+            Resource busStop1 = qs.getResource("p3");
+            place.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEAREST_BUS_STOP),busStop);
+            place.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEAREST_BUS_STOP),busStop1);
+            double dist1 = qs.getLiteral("dist1").getDouble();
+            double dist2 = qs.getLiteral("dist2").getDouble();
+            addDistance(place,busStop,Math.sqrt(dist1));
+            addDistance(place,busStop1,Math.sqrt(dist2));
+            //System.out.println("PLACE: "+ place.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() + "    STOP:" + busStop.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() + "    STOP:" + busStop1.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() );
+        }
+    }
+
     public void calcAllDistances()
     {
         String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> "+
@@ -588,8 +657,8 @@ public class Model {
             double lat = qs.get("lat").asLiteral().getDouble();
             double lat2 = qs.get("lat2").asLiteral().getDouble();
             double distLon = 6371000 * cos(3.14*(lat-lat2)/360) * (qs.get("difflon").asLiteral().getDouble()*3.14/180);
-            System.out.println("ID1: "+qs.get("id")+" ID2: "+qs.get("id2")+" DISTLAT: " + qs.get("distLat") + " DISTLON: "+distLon);
-
+            //System.out.println("ID1: "+qs.get("id")+" ID2: "+qs.get("id2")+" DISTLAT: " + qs.get("distLat") + " DISTLON: "+distLon);
+            //System.out.println("PLACE1: "+ qs.getResource("p").getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() + "    STOP:" + qs.getResource("p2").getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() );
 
             if (!distances.containsKey(qs.get("id").asLiteral().getString()))
                 distances.put(qs.get("id").asLiteral().getString(), new HashMap<>());
@@ -608,6 +677,7 @@ public class Model {
                 addDistance(place1,place2,distances.get(placeId1).get(placeId2));
             }
         }
+        System.out.println(distances);
     }
 
     public List<List<Double>> getAllLines()
@@ -633,6 +703,81 @@ public class Model {
         }
         return result;
     }
+
+    public boolean hasBusRouteBetweenPlaces(String placeId1, String placeId2)
+    {
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "SELECT (COUNT(?s) as ?cnt) " +
+                "WHERE { " +
+                "?p1 a mo:Place . " +
+                "?p2 a mo:Place ." +
+                "?p1 mo:hasID \""+placeId1+"\" ."+
+                "?p2 mo:hasID \""+placeId2+"\" ."+
+                "?p1 mo:hasNearestBusStop ?s ."+
+                "?p2 mo:hasNearestBusStop ?s ."+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        return rs.next().getLiteral("cnt").getInt()==0;
+        //return true;
+    }
+
+    public HashMap<String,String> findBusRoute(String placeId1, String placeId2)
+    {
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "SELECT ?name1 ?name2 ?brn1 ?brn2 ?cnt" +
+                "WHERE { " +
+                "?p1 a mo:Place . " +
+                "?p2 a mo:Place ." +
+                "?p1 mo:hasID \""+placeId1+"\" ."+
+                "?p2 mo:hasID \""+placeId2+"\" ."+
+                "?p1 mo:hasNearestBusStop ?s1 ."+
+                "?p2 mo:hasNearestBusStop ?s2 ."+
+                "?brn1 mo:hasAccordingStation ?s1."+
+                "?brn2 mo:hasAccordingStation ?s2."+
+                "?brn1 mo:hasReachableBusRouteNode ?brn2 ."+
+                "?brn1 mo:ofRoute ?r."+
+                "?brn2 mo:ofRoute ?r."+
+                "?s1 mo:hasName ?name1 ."+
+                "?s2 mo:hasName ?name2 ."+
+                "?interval a mo:BusStationsInterval ."+
+                "?interval mo:startsFrom ?brn1 ."+
+                "?interval mo:finishesTo ?brn2 ."+
+                "?interval mo:hasCount ?cnt."+
+                "}"+
+                "ORDER BY ASC(?cnt) LIMIT 1";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        HashMap<String,String> result = new HashMap<>();
+
+        QuerySolution qs = rs.next();
+        result.put("station1",qs.getLiteral("name1").getString());
+        result.put("station2",qs.getLiteral("name2").getString());
+
+        Resource brn1 = qs.getResource("brn1");
+        Resource brn2 = qs.getResource("brn2");
+
+        int counter = 0;
+        while (brn1 != brn2 && brn1 != null)
+        {
+            Resource busStop = brn1.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION));
+            String name = busStop.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getString();
+            result.put("point"+(++counter),name);
+            brn1 = brn1.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_BUS_ROUTE_NODE));
+
+            if (brn1.getProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION)).getResource().getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_ID)).getString()
+            == brn2.getProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION)).getResource().getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_ID)).getString())
+                break;
+        }
+
+        return result;
+    }
+
+
 
 
 
@@ -724,5 +869,23 @@ public class Model {
             throw new RuntimeException(e);
         }
         return sb.toString();
+    }
+
+    public String getXMLText()
+    {
+        return ontologyModel.toString();
+    }
+
+    public void writeToFile() throws IOException {
+        OntModel m = ontologyModel;
+        RDFWriter writer = m.getWriter();
+        m = null; // m is no longer needed.
+        //writer.setErrorHandler(myErrorHandler);
+        writer.setProperty("showXmlDeclaration","true");
+        writer.setProperty("tab","8");
+        writer.setProperty("relativeURIs","same-document,relative");
+        OutputStream out = new FileOutputStream("foo.rdf");
+        writer.write(ontologyModel, out, "http://example.org/");
+        out.close();
     }
 }

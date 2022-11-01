@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU" type="text/javascript">
+  </script>
+</head>
+<body>
+<div id="map" style="width: 800px; height: 600px"></div>
+<script type="text/javascript">
+  // Функция ymaps.ready() будет вызвана, когда
+  // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+  ymaps.ready(init);
+  function init(){
+    // Создание карты.
+    var myMap = new ymaps.Map("map", {
+      // Координаты центра карты.
+      // Порядок по умолчанию: «широта, долгота».
+      // Чтобы не определять координаты центра карты вручную,
+      // воспользуйтесь инструментом Определение координат.
+      center: [55.76, 37.64],
+      // Уровень масштабирования. Допустимые значения:
+      // от 0 (весь мир) до 19.
+      zoom: 11
+    });
+
+    let dict = {'4476':'#735184','4478':'#124b02','4483':'#af9702','4487':'#FF0000'}
+
+    for (let key1 in dict)
+    {
+      let fnc = (key1,dict)=>{
+        console.log(dict[key1])
+        var xhr = new XMLHttpRequest()
+        xhr.open("GET", "../place/nearBusStation?stationId="+key1)
+        xhr.responseType = "json"
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+
+
+        xhr.send()
+        xhr.onload = () => {
+          console.log("RESPONSE: "+xhr.response)
+          for (let key in xhr.response) {
+            let obj = xhr.response[key]
+            console.log(obj)
+            myMap.geoObjects.add(new ymaps.Placemark([obj.latitude, obj.longitude], {
+                      balloonContent: 'ID: ' + obj.id + " name: " + obj.title,
+                      iconContent: " ID: " +obj.id
+                    },
+                    {
+                      //preset: 'islands#blackStretchyIcon',
+                      iconColor: dict[key1]
+                    }
+            ))
+          }
+        }
+      }
+      fnc(key1,dict)
+    }
+
+
+
+
+
+    /*
+                var xhr1 = new XMLHttpRequest()
+                xhr1.open("GET", "../place/allLines")
+                xhr1.responseType = "json"
+                xhr1.send()
+                xhr1.onload = () => {
+                    for (let key in xhr1.response) {
+                        let obj = xhr1.response[key]
+                        console.log(obj)
+                        myMap.geoObjects.add(new ymaps.GeoObject({
+                            geometry: {
+                                // Тип геометрии - "Ломаная линия".
+                                type: "LineString",
+                                // Указываем координаты вершин ломаной.
+                                coordinates: [
+                                    [obj[0], obj[1]],
+                                    [obj[2], obj[3]]
+                                ]
+                            }
+                        }) )
+                    }
+                }*/
+
+
+  }
+</script>
+
+</body>
+</html>

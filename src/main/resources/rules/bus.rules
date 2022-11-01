@@ -1,0 +1,39 @@
+[
+(?brn1 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode)
+(?brn2 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode)
+(?brn1 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextBusRouteNode ?brn2)
+noValue(?brn1 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode ?brn2)
+makeSkolem(?interval,?brn1,?brn2)
+->
+(?interval rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusStationsInterval)
+(?interval http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#startsFrom ?brn1)
+(?interval http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#finishesTo ?brn2)
+(?interval http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasCount 1)
+(?brn1 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode ?brn2)
+print("BUS RULE 1")
+]
+
+[
+(?brn1 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode)
+(?brn2 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode)
+(?brn1 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextBusRouteNode ?brn2)
+(?brn2 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode ?brn3)
+noValue(?brn1 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode ?brn3)
+
+(?interval rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusStationsInterval)
+(?interval http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#startsFrom ?brn2)
+(?interval http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#finishesTo ?brn3)
+(?interval http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasCount ?cnt)
+addOne(?cnt, ?cnt2)
+makeSkolem(?interval2,?brn2,?brn3)
+->
+
+(?interval2 rdf:type http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusStationsInterval)
+(?interval2 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#startsFrom ?brn1)
+(?interval2 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#finishesTo ?brn3)
+(?interval2 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasCount ?cnt2)
+
+
+(?brn1 http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode ?brn3)
+print("BUS RULE 2")
+]

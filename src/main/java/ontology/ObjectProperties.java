@@ -9,6 +9,14 @@ public class ObjectProperties {
         public static String IN_PLACE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#inPlace";
         public static String HAS_FIRST_STATION = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasFirstStation";
         public static String HAS_NEXT_STATION = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextStation";
+        public static String OF_ROUTE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#ofRoute";
+        public static String HAS_ACCORDING_STATION = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasAccordingStation";
+        public static String HAS_FIRST_BUS_ROUTE_NODE="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasFirstBusRouteNode";
+        public static String HAS_NEXT_BUS_ROUTE_NODE="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextBusRouteNode";
+        public static String HAS_BUS_ROUTE_NODE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasBusRouteNode";
+        public static String HAS_NEAREST_BUS_STOP = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNearestBusStop";
+        public static String HAS_SIBLING_BIKE_NODE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasSiblingBikeNode";
+        public static String HAS_REACHABLE_BUS_ROUTE_NODE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode";
     }
 
     public static class Route

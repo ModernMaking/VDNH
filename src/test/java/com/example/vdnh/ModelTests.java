@@ -119,4 +119,13 @@ public class ModelTests {
 
 
     }
+
+    @Test
+    public void test4()
+    {
+        Model m = Model.getModel();
+        System.out.println(m.hasBusRouteBetweenPlaces("246","294"));
+        System.out.println(m.hasBusRouteBetweenPlaces("361","362"));
+        System.out.println(m.findBusRoute("316","294"));
+    }
 }

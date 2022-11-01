@@ -10,6 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.swagger.models.auth.In;
 import ontology.Model;
+import ontology.VDNHModel;
 import org.apache.jena.base.Sys;
 import org.apache.tomcat.util.json.JSONParser;
 import org.apache.tomcat.util.json.ParseException;
@@ -192,6 +193,21 @@ public class PlaceController {
         for (String placeId: placeIds) {
             places.add(placeRepository.findById(Long.parseLong(placeId)).get());
         }
+        return places;
+    }
+
+    @GetMapping("/nearBusStation")
+    public List<Place> getPlacesForBusStation(String stationId)
+    {
+        List<String> placeIds = VDNHModel.getModel().findNearestPlacesToStation(stationId);
+        List<Place> places = new ArrayList<>();
+        placeIds.forEach(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                Place p = placeRepository.findById(Long.parseLong(s)).get();
+                places.add(p);
+            }
+        });
         return places;
     }
 

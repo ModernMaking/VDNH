@@ -12,6 +12,8 @@ public class OntologyClasses {
         public static String EVENT = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#Event";
         public static String BUS_STOP = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusStop";
         public static String BUS_ROUTE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRoute";
+        public static String BUS_ROUTE_NODE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode";
+        public static String BIKE_NODE = "http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BikeNode";
     }
 
     public static class Route

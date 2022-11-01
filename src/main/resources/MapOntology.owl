@@ -27,15 +27,57 @@
     
 
 
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasAccordingStation -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasAccordingStation"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasBusRouteNode -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasBusRouteNode"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasFirstBusRouteNode -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasFirstBusRouteNode"/>
+    
+
+
     <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasFirstStation -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasFirstStation"/>
     
 
 
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNearestBusStop -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNearestBusStop"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextBusRouteNode -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextBusRouteNode"/>
+    
+
+
     <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextStation -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasNextStation"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasReachableBusRouteNode"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasSiblingBikeNode -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasSiblingBikeNode"/>
     
 
 
@@ -48,6 +90,12 @@
     <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#inPlace -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#inPlace"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#ofRoute -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#ofRoute"/>
     
 
 
@@ -65,6 +113,12 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasCount -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#hasCount"/>
     
 
 
@@ -115,9 +169,27 @@
     
 
 
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BikeNode -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BikeNode"/>
+    
+
+
     <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRoute -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRoute"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusRouteNode"/>
+    
+
+
+    <!-- http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusStationsInterval -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#BusStationsInterval"/>
     
 
 
