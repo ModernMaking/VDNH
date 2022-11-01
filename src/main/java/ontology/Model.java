@@ -90,12 +90,6 @@ public class Model {
                 //System.out.println("INTEREST: "+((JSONObject)o).get("id"));
                 JSONObject object = ((JSONObject)o);
                 addInterestTag(object.getInt("id"), object.getString("name"));
-                if (object.has("children"))
-                {
-                    JSONArray children = object.getJSONArray("children");
-                    //System.out.println(children);
-                    addTagsFromJSONArray(children);
-                }
             }
 
             @Override
@@ -124,6 +118,11 @@ public class Model {
         String jsonInString = new Gson().toJson(obj);
         JSONObject mJSONObject = new JSONObject(jsonInString);
         //System.out.println(mJSONObject);
+
+        Set<String> keySet = mJSONObject.keySet();
+        //System.out.println("Events: "+keySet);
+
+
 
         JSONObject places = (mJSONObject.getJSONObject("places"));
         for (String placeId: places.keySet())
@@ -154,12 +153,27 @@ public class Model {
             {
                 place.addProperty(RDF.type, ontologyModel.getOntClass(OntologyClasses.Map.ENTRANCE));
             }
-
+            if (type.equals("Остановка"))
+            {
+                place.addProperty(RDF.type, ontologyModel.getOntClass(OntologyClasses.Map.BUS_STOP));
+            }
 
 
             //Place place = new Place(Integer.valueOf(placeId).longValue(),title, type, latitude, longitude);
             //placeRepository.save(place);
         }
+
+
+        JSONObject events = mJSONObject.getJSONObject("events");
+        for (String eventId: events.keySet()) {
+            JSONObject event = events.getJSONObject(eventId);
+            String previewtext = event.getString("preview_text");
+            String title = event.getString("title");
+            JSONArray eventPlaces = event.getJSONArray("places");
+            System.out.println(event);
+        }
+        System.out.println("EVENTS "+events.toString());
+
     }
 
     public void addTagsToPlaces()
@@ -202,6 +216,101 @@ public class Model {
 
     }
 
+
+    public void addTagsSimilarities()
+    {
+        JSONParser parser = null;
+        try {
+            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() +"../classes/similarities.json"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        Object obj = null;//parseObject();//parse();//parse(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
+        try {
+            obj = parser.parse();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        String jsonInString = new Gson().toJson(obj);
+        JSONObject mJSONObject = new JSONObject(jsonInString);
+
+        for (String tagId1: mJSONObject.keySet())
+        {
+            JSONObject tagSimilarities = mJSONObject.getJSONObject(tagId1);
+            for (String tagId2: tagSimilarities.keySet())
+            {
+                double similarity = tagSimilarities.getDouble(tagId2);
+                Resource tag1 = tags.get(Integer.parseInt(tagId1));
+                Resource tag2 = tags.get(Integer.parseInt(tagId2));
+                addTagSimilarity(tag1,tag2,similarity);
+            }
+        }
+    }
+
+
+    public void addBusRoutes()
+    {
+        JSONParser parser = null;
+        try {
+            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() +"../classes/bus_routes.json"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        Object obj = null;//parseObject();//parse();//parse(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
+        try {
+            obj = parser.parse();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        String jsonInString = new Gson().toJson(obj);
+        JSONArray mJSONarray = new JSONArray(jsonInString);
+
+        mJSONarray.forEach(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) {
+                JSONArray busStops = (JSONArray) o;
+                List<String> stations = new ArrayList<>();
+                busStops.forEach(new Consumer<Object>() {
+                    @Override
+                    public void accept(Object o) {
+                        stations.add(o.toString());
+                    }
+
+                    @Override
+                    public Consumer<Object> andThen(Consumer<? super Object> after) {
+                        return Consumer.super.andThen(after);
+                    }
+                });
+                addBusRoute(stations);
+            }
+
+            @Override
+            public Consumer<Object> andThen(Consumer<? super Object> after) {
+                return Consumer.super.andThen(after);
+            }
+        });
+
+        /*mJSONarray.forEach(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) {
+                Resource busStop = places.get(o.toString());
+            }
+
+            @Override
+            public Consumer<Object> andThen(Consumer<? super Object> after) {
+                return Consumer.super.andThen(after);
+            }
+        });*/
+
+    }
+
+
+
+
     private static boolean isCreated = false;
 
     private static Model model = null;
@@ -235,7 +344,8 @@ public class Model {
         addInterests();
         addTagsToPlaces();
         calcAllDistances();
-
+        addTagsSimilarities();
+        addBusRoutes();
         //ontologyModel.write(System.out);
     }
 
@@ -296,6 +406,37 @@ public class Model {
         return request;
     }
 
+    public Resource addEvent(String id, String name, String description, List<String> placeIds)
+    {
+        Individual event = ontologyModel.createIndividual(ontologyModel.createResource());
+        event.setOntClass(ontologyModel.getOntClass(OntologyClasses.Map.EVENT));
+        event.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME), name);
+        event.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_DESCRIPTION),description);
+        event.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_ID),id);
+
+        placeIds.forEach(s -> {
+            Resource place = places.get(s);
+            event.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.IN_PLACE),place);
+        });
+
+        return event;
+    }
+
+    public Resource addBusRoute(List<String> stations)
+    {
+        Individual r = ontologyModel.createIndividual(ontologyModel.createResource());
+        r.setOntClass(ontologyModel.getOntClass(OntologyClasses.Map.BUS_ROUTE));
+        Resource station0 = places.get(stations.get(0));
+        r.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_FIRST_STATION),station0);
+        for (int i=1; i<stations.size(); i++)
+        {
+            Resource station = places.get(stations.get(i));
+            Resource prevStation = places.get(stations.get(i-1));
+            prevStation.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_STATION),station);
+        }
+        return r;
+    }
+
     public void addInterestTagToPlace(Resource place, Resource tag)
     {
         place.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Tag.HAS_INTEREST_TAG), tag);
@@ -306,12 +447,22 @@ public class Model {
         request.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Tag.HAS_INTEREST_TAG), tag);
     }
 
+    public void addTagSimilarity(Resource tag1, Resource tag2, double similarity)
+    {
+        Individual s = ontologyModel.createIndividual(ontologyModel.createResource());
+        s.setOntClass(ontologyModel.getOntClass(OntologyClasses.Tag.TAG_SIMILARITY));
+        s.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Tag.HAS_SIMILARITY), ontologyModel.createTypedLiteral(similarity));
+        s.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Tag.HAS_TAG1), tag1);
+        s.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Tag.HAS_TAG2),tag2);
+    }
+
     public void addDistance(Resource place1, Resource place2, double distance)
     {
         Individual dist = ontologyModel.createIndividual(ontologyModel.createResource());
         dist.setOntClass(ontologyModel.getOntClass(OntologyClasses.Map.DISTANCE));
         dist.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.STARTS_FROM), place1);
         dist.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.FINISHES_TO), place2);
+        dist.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LENGTH), ontologyModel.createTypedLiteral(distance));
         dist.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LENGTH),ontologyModel.createTypedLiteral(dist));
     }
 
@@ -348,6 +499,58 @@ public class Model {
             //System.out.println("INTERESTED PLACE: "+place);
         }
         return interestPlacesIds;
+    }
+
+    public List<String> placeOrder(List<String> placesIds)
+    {
+        HashMap<String,HashMap<String,Double>> distances = new HashMap<>();
+        List<String> order = new ArrayList<>();
+
+        for (String placeId1: placesIds)
+        {
+            for (String placeId2: placesIds)
+            {
+                if (placeId1 != placeId2)
+                {
+                    Resource place1 = places.get(placeId1);
+                    Resource place2 = places.get(placeId2);
+
+                    double latitude1 = places.get(placeId1).getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LATITUDE)).getDouble();
+                    double longitude1 = places.get(placeId1).getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LONGITUDE)).getDouble();
+
+                    double latitude2 = places.get(placeId2).getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LATITUDE)).getDouble();
+                    double longitude2 = places.get(placeId2).getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LONGITUDE)).getDouble();
+
+                    if (!distances.containsKey(placeId1))
+                    {
+                        distances.put(placeId1,new HashMap<>());
+                    }
+                    double dist = Math.sqrt(Math.pow(latitude1-latitude2,2) + Math.pow(longitude1-longitude2,2));
+                    distances.get(placeId1).put(placeId2,dist);
+                }
+            }
+        }
+
+        order.add(placesIds.get(0));
+        for (int i=0; i<order.size(); i++)
+        {
+            String placeId1 = order.get(i);
+            HashMap<String,Double> distTo = distances.get(placeId1);
+            double min = -1;
+            String nextPlace = "";
+            for (String placeId2: distTo.keySet())
+            {
+                if (!order.contains(placeId2) && (min == -1 || min>distTo.get(placeId2)))
+                {
+                    min = distTo.get(placeId2);
+                    nextPlace = placeId2;
+                }
+            }
+            if (nextPlace!="")
+                order.add(nextPlace);
+        }
+
+        return order;
     }
 
     public void calcAllDistances()
@@ -432,6 +635,8 @@ public class Model {
     }
 
 
+
+
     public void calcRoute()
     {
 
@@ -459,7 +664,7 @@ public class Model {
 
             String name = point.hasProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)) ? point.getProperty(infModel.getProperty(DataProperties.Map.HAS_NAME)).getString() : "";
 
-            //System.out.println(interruptPoint+" "+name);
+            System.out.println(interruptPoint+" "+name);
             while (interruptPoint.hasProperty(infModel.getProperty(ObjectProperties.Route.HAS_PREVIOUS)))
             {
                 interruptPoint = interruptPoint.getPropertyResourceValue(infModel.getProperty(ObjectProperties.Route.HAS_PREVIOUS));
@@ -469,10 +674,10 @@ public class Model {
 
                 double time = interruptPoint.getProperty(infModel.getProperty(DataProperties.Route.HAS_TOTAL_TIME)).getDouble();
 
-                //System.out.println(interruptPoint+" "+name+"    Время в пути: "+time+" минут");
+                System.out.println(interruptPoint+" "+name+"    Время в пути: "+time+" минут");
             }
 
-            //System.out.println("=================");
+            System.out.println("=================");
         }
 
     }

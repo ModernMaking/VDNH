@@ -19,10 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -107,73 +104,16 @@ public class PlaceController {
             placeRepository.save(place);
         }
 
-        //JSONObject jsonObject =  new JSONObject(obj);//(JSONObject) obj;
+        JSONObject events = mJSONObject.getJSONObject("events");
+        for (String eventId: events.keySet()) {
+            JSONObject event = events.getJSONObject(eventId);
+            String previewtext = event.getString("preview_text");
+            String title = event.getString("title");
+            JSONArray eventPlaces = event.getJSONArray("places");
+            //System.out.println(event);
+        }
 
-        //System.out.println(jsonObject);
 
-            /*
-            jsonObject.forEach(new BiConsumer<String, Object>() {
-                @Override
-                public void accept(String s, Object o) {
-                    System.out.println(s);
-                }
-
-                @Override
-                public BiConsumer<String, Object> andThen(BiConsumer<? super String, ? super Object> after) {
-                    return BiConsumer.super.andThen(after);
-                }
-            });
-
-            */
-
-        //JSONObject visitors = (JSONObject) jsonObject.get("visitors");
-        //System.out.println(visitors.get("sections"));
-
-            /*JSONObject places = new JSONObject(jsonObject.get("places"));
-            for (String key:
-                 places.keySet()) {
-                System.out.println(key);
-            }*/
-
-        //System.out.println(places);
-
-            /*
-
-            places.forEach(new BiConsumer<String, Object>() {
-                @Override
-                public void accept(String s, Object o) {
-                    System.out.println(s);
-                    //System.out.println(o);
-                    JSONObject object = (JSONObject) o;
-
-                    if (object.containsKey("coordinates"))
-                    {
-                        JSONArray coordinates = (JSONArray) object.get("coordinates");
-                        System.out.println("longitude: "+coordinates.get(0).toString());
-                        System.out.println("latitude: "+coordinates.get(1).toString());
-                    }
-
-                    if (object.containsKey("title"))
-                    {
-                        System.out.println("title: "+object.get("title"));
-                    }
-
-                    if (object.containsKey("type"))
-                    {
-                        System.out.println("type: "+object.get("type"));
-                    }
-
-                }
-
-                @Override
-                public BiConsumer<String, Object> andThen(BiConsumer<? super String, ? super Object> after) {
-                    return BiConsumer.super.andThen(after);
-                }
-            });
-
-             */
-
-        //System.out.println(obj);
     }
 
     @GetMapping("/toiletNear")
@@ -227,6 +167,32 @@ public class PlaceController {
         });
 
         return Model.getModel().findInterestedPlaces(tagIds);
+    }
+
+    @PostMapping("/order/byTags")
+    public List<Place> getPlaceIdsOrderByTags(@RequestBody String requestParams)
+    {
+        System.out.println(requestParams);
+
+
+        Gson gson = new Gson();
+
+        JsonArray arr = gson.fromJson(requestParams,JsonObject.class).get("tagIds").getAsJsonArray();
+        List<Integer> tagIds = new ArrayList<>();
+
+        arr.forEach(new Consumer<JsonElement>() {
+            @Override
+            public void accept(JsonElement jsonElement) {
+                tagIds.add(jsonElement.getAsInt());
+            }
+        });
+
+        List<String> placeIds = Model.getModel().placeOrder(Model.getModel().findInterestedPlaces(tagIds));
+        List<Place> places = new ArrayList<>();
+        for (String placeId: placeIds) {
+            places.add(placeRepository.findById(Long.parseLong(placeId)).get());
+        }
+        return places;
     }
 
     //!!! Получить погоду на заданный день

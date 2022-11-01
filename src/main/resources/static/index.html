@@ -27,9 +27,13 @@
 
 
             var xhr = new XMLHttpRequest()
-            xhr.open("GET", "../place/all")
+            xhr.open("POST", "../place/order/byTags")
             xhr.responseType = "json"
-            xhr.send()
+            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+            var body = JSON.stringify({"tagIds":[1,10]})
+
+            xhr.send(body)
             xhr.onload = () => {
                 for (let key in xhr.response) {
                     let obj = xhr.response[key]
@@ -43,7 +47,7 @@
             }
 
 
-
+/*
             var xhr1 = new XMLHttpRequest()
             xhr1.open("GET", "../place/allLines")
             xhr1.responseType = "json"
@@ -64,7 +68,7 @@
                         }
                     }) )
                 }
-            }
+            }*/
 
 
     }

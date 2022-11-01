@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<table id="places">
+
+</table>
+
+<script>
+  var xhr = new XMLHttpRequest()
+  xhr.open("GET","/place/all")
+  xhr.responseType="json"
+  xhr.send()
+  xhr.onload = () => {
+    //console.log(xhr.response)
+      let arr = xhr.response
+      let table = document.getElementById("places")
+      for (let key in arr)
+      {
+          console.log(arr[key])
+          let tr = document.createElement("tr")
+          let td1 = document.createElement("td")
+          let td2 = document.createElement("td")
+          td1.innerText = arr[key]["title"]
+          td2.innerText="Теги"
+          table.appendChild(tr)
+          tr.appendChild(td1)
+          tr.appendChild(td2)
+      }
+  }
+</script>
+
+</body>
+</html>

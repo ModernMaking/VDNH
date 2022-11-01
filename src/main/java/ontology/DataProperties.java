@@ -22,6 +22,7 @@ public class DataProperties {
     {
         public static String HAS_NAME = "http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasName";
         public static String HAS_ID = "http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasID";
+        public static String HAS_SIMILARITY = "http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#hasSimilarity";
     }
 
     public static class Request
