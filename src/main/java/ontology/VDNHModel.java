@@ -130,6 +130,74 @@ public class VDNHModel {
         return places;
     }
 
+    public List<List<String>> findAllBusRoutes()
+    {
+        List<List<String>> routeList = new ArrayList<>();
+
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "SELECT ?r " +
+                "WHERE { " +
+                "?r a mo:BusRoute ."+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        while (rs.hasNext())
+        {
+            QuerySolution qs = rs.next();
+            Resource routeResource = qs.getResource("r");
+
+            List<String> route = new ArrayList<>();
+
+            Resource firstBRN = routeResource.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_FIRST_BUS_ROUTE_NODE));
+            route.add(getBusStationIdForBRN(firstBRN));
+            Resource currBRN = firstBRN;
+            while (currBRN.hasProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_BUS_ROUTE_NODE)))
+            {
+                currBRN = currBRN.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_BUS_ROUTE_NODE));
+                route.add(getBusStationIdForBRN(currBRN));
+            }
+
+            routeList.add(route);
+        }
+
+        return routeList;
+    }
+
+    private String getBusStationIdForBRN(Resource brn)
+    {
+        Resource station = brn.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION));
+        return station.getProperty(ontologyModel.getDatatypeProperty((DataProperties.Map.HAS_ID))).getString();
+    }
+
+    public List<String> getAllReachableStationsFrom(String id)
+    {
+        List<String> stations = new ArrayList<>();
+
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "SELECT ?id2 " +
+                "WHERE { " +
+                "?brn mo:hasAccordingStation ?s ."+
+                "?s mo:hasID \""+id+"\" ."+
+                "?brn mo:hasReachableBusRouteNode ?brn2 ."+
+                "?brn2 mo:hasAccordingStation ?s2 ."+
+                "?s2 mo:hasID ?id2 ."+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        while (rs.hasNext())
+        {
+            QuerySolution qs = rs.next();
+            String currId = qs.getLiteral("id2").getString();
+            stations.add(currId);
+        }
+
+        return stations;
+    }
+
     protected org.apache.jena.rdf.model.Model readModel(String modelFile)
     {
         // create an empty model

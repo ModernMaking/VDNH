@@ -211,6 +211,41 @@ public class PlaceController {
         return places;
     }
 
+    @GetMapping("/allRoutes")
+    public List<List<Place>> getAllBusRoutes()
+    {
+
+        List<List<String>> routes = VDNHModel.getModel().findAllBusRoutes();
+        List<List<Place>> res = new ArrayList<>();
+        for (int i=0; i<routes.size(); i++)
+        {
+            List<Place> currRoute = new ArrayList<>();
+            routes.get(i).forEach(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    currRoute.add(placeRepository.findById(Long.parseLong(s)).get());
+                }
+            });
+
+            res.add(currRoute);
+        }
+        return res;
+    }
+
+    @GetMapping("/reachable")
+    public List<Place> getReachableStations(String id)
+    {
+        List<Place> places = new ArrayList<>();
+        List<String> ids = VDNHModel.getModel().getAllReachableStationsFrom(id);
+        ids.forEach(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                places.add(placeRepository.findById(Long.parseLong(s)).get());
+            }
+        });
+        return places;
+    }
+
     //!!! Получить погоду на заданный день
     public HashMap<String,String> getWeather(Date date)
     {
