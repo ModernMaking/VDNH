@@ -340,10 +340,10 @@ public class Model {
         busReasoner = createReasonerForInteraction(BUS_RULES);
 
         addPlaces();
-        //addInterests();
-        //addTagsToPlaces();
-        //calcAllDistances();
-        //addTagsSimilarities();
+        addInterests();
+        addTagsToPlaces();
+        calcAllDistances();
+        addTagsSimilarities();
         addBusRoutes();
         calcNearestBusStations();
         ontologyModel.write(System.out);
@@ -624,13 +624,24 @@ public class Model {
 
     public void calcAllDistances()
     {
+        places.keySet().forEach(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                calcAllDistances(s);
+            }
+        });
+        System.out.println(distances);
+    }
+
+    public void calcAllDistances(String fromId)
+    {
         String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> "+
                 "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/9/request#> "+
                 "PREFIX f: <http://www.ontotext.com/sparql/functions/>"+
-                "SELECT ?p ?p2 ?id ?lon ?lat ?id2 ?lon2 ?lat2 (111300*abs(?lat2-?lat) as ?distLat) (abs(?lon-?lon2) as ?difflon)"+
+                "SELECT ?p ?p2  ?lon ?lat ?id2 ?lon2 ?lat2 (111300*abs(?lat2-?lat) as ?distLat) (abs(?lon-?lon2) as ?difflon)"+
                 "WHERE { "+
                 " ?p a mo:Place ."+
-                " ?p mo:hasID ?id . "+
+                " ?p mo:hasID \""+fromId+"\" . "+
                 " ?p mo:hasLongitude ?lon . "+
                 " ?p mo:hasLatitude ?lat . "+
                 "{"+
@@ -640,11 +651,10 @@ public class Model {
                 " ?p2 mo:hasLongitude ?lon2 . "+
                 " ?p2 mo:hasLatitude ?lat2 . "+
                 "}"+
-                "ORDER BY ASC((?lon-?lon2)*(?lon-?lon2)+(?lat-?lat2)*(?lat-?lat2)) LIMIT 4 "+
                 "}"+
-                "BIND (f:cos((3.14*(?lat2+?lat)/360)) AS ?cos) ."+
-                "FILTER((?id != ?id2) && (?lat>0) && (?lat2>0)) ."+
-                "}";
+                "FILTER((\""+fromId+"\" != ?id2) && (?lat>0) && (?lat2>0)) ."+
+                "}"+
+                "ORDER BY ASC(0.56*0.56*(?lon-?lon2)*(?lon-?lon2)+(?lat-?lat2)*(?lat-?lat2)) LIMIT 4 ";
                 //"ORDER BY ASC((?lon-?lon2)*(?lon-?lon2)+(?lat-?lat2)*(?lat-?lat2)) LIMIT 4";
         Query query = QueryFactory.create(queryString);
         QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
@@ -653,22 +663,22 @@ public class Model {
         while (rs.hasNext())
         {
             QuerySolution qs = rs.next();
-            System.out.println("Dist Lat: "+qs.get("distLat")+" "+qs.get("id")+" "+qs.get("lon")+" "+qs.get("lat")+"; "+qs.get("id2")+" "+qs.get("lon2")+" "+qs.get("lat2"));
+            //System.out.println("Dist Lat: "+qs.get("distLat")+" "+qs.get("id")+" "+qs.get("lon")+" "+qs.get("lat")+"; "+qs.get("id2")+" "+qs.get("lon2")+" "+qs.get("lat2"));
             double lat = qs.get("lat").asLiteral().getDouble();
             double lat2 = qs.get("lat2").asLiteral().getDouble();
             double distLon = 6371000 * cos(3.14*(lat-lat2)/360) * (qs.get("difflon").asLiteral().getDouble()*3.14/180);
             //System.out.println("ID1: "+qs.get("id")+" ID2: "+qs.get("id2")+" DISTLAT: " + qs.get("distLat") + " DISTLON: "+distLon);
             //System.out.println("PLACE1: "+ qs.getResource("p").getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() + "    STOP:" + qs.getResource("p2").getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getLiteral().getString() );
 
-            if (!distances.containsKey(qs.get("id").asLiteral().getString()))
-                distances.put(qs.get("id").asLiteral().getString(), new HashMap<>());
-            distances.get(qs.get("id").asLiteral().getString()).put(qs.get("id2").asLiteral().getString(),distLon+qs.get("distLat").asLiteral().getDouble());
+            if (!distances.containsKey(fromId))
+                distances.put(fromId, new HashMap<>());
+            distances.get(fromId).put(qs.get("id2").asLiteral().getString(),distLon+qs.get("distLat").asLiteral().getDouble());
 
             //distances.put(new AbstractMap.SimpleEntry<>(qs.get("id").asLiteral().getString(), qs.get("id2").asLiteral().getString()) );
             //addDistance(place1,place2,qs.get("distLat").asLiteral().getDouble()+distLon);
         }
 
-        for (String placeId1 : distances.keySet())
+        /*for (String placeId1 : distances.keySet())
         {
             for (String placeId2: distances.get(placeId1).keySet())
             {
@@ -676,8 +686,8 @@ public class Model {
                 Resource place2 = places.get(placeId2);
                 addDistance(place1,place2,distances.get(placeId1).get(placeId2));
             }
-        }
-        System.out.println(distances);
+        }*/
+        //System.out.println(distances);
     }
 
     public List<List<Double>> getAllLines()
