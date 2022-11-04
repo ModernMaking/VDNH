@@ -29,11 +29,11 @@ import java.io.UnsupportedEncodingException;
 public class VdnhApplication {
 
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-       try {
+       /*try {
             Model.getModel().writeToFile();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
         SpringApplication.run(VdnhApplication.class, args);
     }

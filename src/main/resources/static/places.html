@@ -11,8 +11,9 @@
 </table>
 
 <script>
+    let place_tags = {}
   var xhr = new XMLHttpRequest()
-  xhr.open("GET","/place/all")
+  xhr.open("GET","/place/all/withoutService")
   xhr.responseType="json"
   xhr.send()
   xhr.onload = () => {
@@ -30,6 +31,50 @@
           table.appendChild(tr)
           tr.appendChild(td1)
           tr.appendChild(td2)
+          addTags(td2, arr[key]["id"])
+      }
+  }
+
+  let addTags = (element, placeId) => {
+
+        place_tags[placeId] = []
+
+      let xhr = new XMLHttpRequest()
+      xhr.open("GET","../../tag/interest/all")
+      xhr.responseType = "json"
+      xhr.send()
+      xhr.onload = () => {
+          let tags = xhr.response
+
+          //let select = document.createElement("select")
+          //select.setAttribute("multiple","multiple")
+
+          let block = document.createElement("div")
+
+          for (let tagKey in tags)
+          {
+
+
+              let button = document.createElement("button")
+              button.innerText = tags[tagKey]
+              block.appendChild(button)
+              button.onclick = () => {
+                  if (!place_tags[placeId].includes(tagKey)) {
+                      place_tags[placeId].push(tagKey)
+                      button.style.backgroundColor = "#3f0202"
+                  }
+                  else
+                  {
+                      button.style.backgroundColor = "#CCCCCC"
+                      var index = place_tags[placeId].indexOf(tagKey);
+                      if (index >= 0) {
+                          place_tags[placeId].splice( index, 1 );
+                      }
+                  }
+              }
+
+          }
+          element.appendChild(block)
       }
   }
 </script>

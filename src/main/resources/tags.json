@@ -1,127 +1,182 @@
 [
   {
-    "name": "Наука и техника",
+    "name": "Наука",
     "en": "science",
+    "ru": "наука_NOUN",
     "id" : 1
   },
   {
     "name" : "Физика",
     "en": "physics",
+    "ru": "физика_NOUN",
     "id" : 2
   },
   {
     "name" : "Механика",
     "en": "mechanics",
+    "ru": "механика_NOUN",
     "id" : 3
   },
   {
     "name" : "Оптика",
     "en": "optics",
+    "ru": "оптика_NOUN",
     "id" : 4
   },
   {
     "name" : "Атомная физика",
     "en": "nuclear",
+    "ru": "атом_NOUN",
     "id" : 5
   },
   {
     "name" : "Химия",
     "en": "chemistry",
+    "ru": "химия_NOUN",
     "id" : 6
   },
   {
     "name" : "IT",
     "en": "computer",
+    "ru": "компьютер_NOUN",
     "id" : 7
   },
   {
     "name" : "Техника",
     "en": "technics",
+    "ru": "техника_NOUN",
     "id" : 8
   },
   {
     "name" : "Транспорт",
     "en": "vehicles",
+    "ru": "транспорт_NOUN",
     "id" : 10
   },
   {
     "name" : "Биология",
     "en": "biology",
+    "ru": "биология_NOUN",
     "id" : 9
   },
   {
     "name" : "Культура",
     "en": "culture",
+    "ru": "культура_NOUN",
     "id" : 11
   },
   {
     "name" : "Путешествия",
     "en": "travel",
+    "ru": "путешествие_NOUN",
     "id" : 12
   },
   {
     "name" : "Красота и стиль",
     "en": "beauty",
+    "ru": "красота_NOUN",
     "id" : 13
   },
   {
     "name" : "Литература",
     "en": "literature",
+    "ru": "литература_NOUN",
     "id" : 14
   },
   {
     "name" : "История",
     "en": "history",
+    "ru": "история_NOUN",
     "id" : 15
   },
   {
     "name" : "Спорт",
     "en": "sport",
+    "ru": "спорт_NOUN",
     "id" : 16
   },
   {
     "name" : "Игровые виды спорта",
     "en": "game",
+    "ru": "игра_NOUN",
     "id" : 17
   },
   {
     "name" : "Водные виды спорта",
     "en": "watter",
+    "ru": "вода_NOUN",
     "id" : 18
   },
   {
     "name" : "Силовые виды спорта",
     "en": "strong",
+    "ru": "сила_NOUN",
     "id" : 19
   },
   {
     "name" : "Скоростные виды спорта",
     "en": "speed",
+    "ru": "скорость_NOUN",
     "id" : 20
   },
   {
     "name" : "Экстримальные виды спорта",
     "en": "extreme",
+    "ru": "экстрим_NOUN",
     "id" : 21
   },
   {
     "name" : "Природа",
     "en": "nature",
+    "ru": "природа_NOUN",
     "id" : 22
   },
   {
     "name" : "Растения",
     "en": "plants",
+    "ru": "растение_NOUN",
     "id" : 23
   },
   {
     "name" : "Животные",
     "en": "animals",
+    "ru": "животное_NOUN",
     "id" : 24
   },
   {
     "name" : "Промышленность",
     "en": "industry",
+    "ru": "промышленность_NOUN",
     "id" : 25
+  },
+  {
+    "name" : "Театр",
+    "en": "theatre",
+    "ru": "театр_NOUN",
+    "id" : 26
+  },
+  {
+    "name" : "Изобразительное искусство",
+    "en": "drawing",
+    "ru": "живопись_NOUN",
+    "id" : 27
+  },
+  {
+    "name" : "Экология",
+    "en": "ecology",
+    "ru": "экология_NOUN",
+    "id" : 28
+  },
+  {
+    "name" : "Кулинария",
+    "en": "cooking",
+    "ru": "кулинария_NOUN",
+    "id" : 29
+  },
+  {
+    "name" : "Сельское хозяйство",
+    "en": "agriculture",
+    "ru": "ферма_NOUN",
+    "id" : 30
   }
 ]

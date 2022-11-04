@@ -18,4 +18,6 @@ public interface PlaceRepository extends CrudRepository<Place,Long> {
     public List<Place> findAllByType(String type);
 
     public List<Place> findAllByLatitudeAfterAndLongitudeAfter(double latitude, double longitude);
+
+    public List<Place> findAllByTypeNotIn(List<String> types);
 }

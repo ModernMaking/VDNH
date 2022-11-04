@@ -143,6 +143,26 @@ public class PlaceController {
         return placeRepository.findAllByLatitudeAfterAndLongitudeAfter(0,0);
     }
 
+    @GetMapping("/all/withoutService")
+    public List<Place> getAllPlacesExceptService()
+    {
+        List<String> exceptedTypes = new ArrayList<>();
+        exceptedTypes.add("Туалеты");
+        exceptedTypes.add("Остановка");
+        exceptedTypes.add("Въезд");
+        exceptedTypes.add("Парковка");
+        exceptedTypes.add("Вход");
+        exceptedTypes.add("Такси");
+        exceptedTypes.add("Инфоцентр");
+        exceptedTypes.add("Билеты");
+        exceptedTypes.add("Прокат");
+        exceptedTypes.add("Еда");
+        exceptedTypes.add("Банкомат");
+        exceptedTypes.add("Вендинговый аппарат");
+        exceptedTypes.add("Читальня");
+        return placeRepository.findAllByTypeNotIn(exceptedTypes);
+    }
+
     @GetMapping("/allLines")
     public List<List<Double>> getAllLines()
     {
@@ -167,7 +187,7 @@ public class PlaceController {
             }
         });
 
-        return Model.getModel().findInterestedPlaces(tagIds);
+        return VDNHModel.getModel().placeIdsByTags(tagIds); // findInterestedPlaces(tagIds);
     }
 
     @PostMapping("/order/byTags")

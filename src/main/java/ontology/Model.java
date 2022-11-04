@@ -207,7 +207,7 @@ public class Model {
             tagsForPlace.forEach(new Consumer<Object>() {
                 @Override
                 public void accept(Object o) {
-                    Integer tagId = (Integer) o;
+                    Integer tagId = Integer.parseInt(o.toString());
                     Resource tag = tags.get(tagId);
                     addInterestTagToPlace(place,tag);
                 }
@@ -345,7 +345,7 @@ public class Model {
         calcAllDistances();
         addTagsSimilarities();
         addBusRoutes();
-        calcNearestBusStations();
+        //calcNearestBusStations();
         ontologyModel.write(System.out);
     }
 

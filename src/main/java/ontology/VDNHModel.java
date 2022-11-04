@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.apache.jena.ontology.OntModelSpec.OWL_MEM_MICRO_RULE_INF;
 
@@ -196,6 +197,77 @@ public class VDNHModel {
         }
 
         return stations;
+    }
+
+    public HashMap<Integer, String> getAllInterestTags()
+    {
+        HashMap<Integer, String> res = new HashMap<>();
+
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
+                "SELECT ?id ?name " +
+                "WHERE { " +
+                "?tag a to:InterestTag ."+
+                "?tag to:hasID ?id ."+
+                "?tag to:hasName ?name ."+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        while (rs.hasNext())
+        {
+            QuerySolution qs = rs.next();
+            String name = qs.getLiteral("name").getString();
+            Integer id = qs.getLiteral("id").getInt();
+            res.put(id,name);
+        }
+        return res;
+    }
+
+    public List<String> placeIdsByTags(List<Integer> tagIds)
+    {
+        List<String> result = new ArrayList<>();
+        String filterString = "";
+
+        List<String> predicates = new ArrayList<>();
+        tagIds.forEach(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer integer) {
+                String curr = "?id = "+String.valueOf(integer);
+                predicates.add(curr);
+            }
+        });
+        filterString = "( ?id IN ("+String.join(",",predicates)+") )";
+
+        String fs2 = String.join("|",predicates);
+
+        String fs3 = String.join("||",predicates);
+
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
+                "SELECT DISTINCT ?placeID " +
+                "WHERE { " +
+                "?place a mo:Place . "+
+                "?place mo:hasID ?placeID . "+
+                "?place to:hasInterestTag ?tag . "+
+                "?tag a to:InterestTag . "+
+                "?tag to:hasID ?id . "+
+                "FILTER ("+fs3+" ) "+
+                //"FILTER (?tag to:hasID \"10\" ) "+
+                //filterString + //"FILTER (?tag to:hasID  ) . "+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        while (rs.hasNext())
+        {
+            QuerySolution qs = rs.next();
+            String id = qs.getLiteral("placeID").getString();
+            result.add(id);
+        }
+        return result;
     }
 
     protected org.apache.jena.rdf.model.Model readModel(String modelFile)
