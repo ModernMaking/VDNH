@@ -5,6 +5,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import ontology.Model;
+import ontology.VDNHModel;
 import org.apache.jena.atlas.json.JSON;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -123,10 +124,12 @@ public class ModelTests {
     @Test
     public void test4()
     {
-        Model m = Model.getModel();
+        VDNHModel m = VDNHModel.getModel();
         System.out.println(m.hasBusRouteBetweenPlaces("246","294"));
         System.out.println(m.hasBusRouteBetweenPlaces("361","362"));
-        System.out.println(m.findBusRoute("316","294"));
+        System.out.println(m.findBusRoute("354","363"));
+        List<String> places = new ArrayList<>();
+        System.out.println(m.findRouteAsPlaceIdsBetweenPlaces("354","20186"));
     }
 
 

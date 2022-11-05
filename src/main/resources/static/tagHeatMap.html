@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="map">
+    <script>
+        let dict = {}
+        let xhr = new XMLHttpRequest()
+        xhr.open("GET","../tag/map")
+        xhr.responseType="json"
+        xhr.send()
+        xhr.onload = () => {
+            let obj = xhr.response
+            let table = document.createElement("table")
+            table.style.borderStyle = "solid"
+            table.style.border = "solid"
+            let tr1 = document.createElement("tr")
+            let td1 = document.createElement("td")
+            table.appendChild(tr1)
+            tr1.appendChild(td1)
+
+            let tags = []
+            for (let key1 in obj)
+            {
+                let td = document.createElement("td")
+                td.innerText=key1
+                tr1.appendChild(td)
+                tags.push(key1)
+            }
+
+            document.getElementById("map").appendChild(table)
+
+            for (let key1 in obj)
+            {
+                //let tr = document.createElement("tr")
+                dict[key1] = {}
+                //table.appendChild(tr)
+                //let td11 = document.createElement("td")
+                //td11.innerText=key1
+                //tr.appendChild(td11)
+                for (let key2 in obj[key1])
+                {
+                    //let td = document.createElement("td")
+                    //td.innerText = obj[key1][key2]
+                    dict[key1][key2] = obj[key1][key2]
+                   // tr.appendChild(td)
+                }
+            }
+
+            for (let i in tags)
+            {
+                let tr = document.createElement("tr")
+                let td1 = document.createElement("td")
+                td1.innerText = tags[i]
+                td1.style.borderStyle = "dotted"
+                td1.style.borderColor="#CCCCCC"
+                tr.appendChild(td1)
+                table.append(tr)
+                for (let j in tags)
+                {
+                    let td = document.createElement("td")
+                    td.style.borderStyle = "dotted"
+                    td.style.borderColor="#CCCCCC"
+                    td.innerText = dict[tags[i]][tags[j]]
+                    tr.appendChild(td)
+                    let k = dict[tags[i]][tags[j]]
+                    if (k!==undefined)
+                    {
+                        if (k<0)
+                            td.style.backgroundColor = '#e79f9f'
+                        if (k>=0 && k<0.2)
+                            td.style.backgroundColor = '#f1dcac'
+                        if (k>=0.2 && k<0.5)
+                            td.style.backgroundColor = '#b3f1b3'
+                        if (k>=0.5)
+                            td.style.backgroundColor = '#68f183'
+                    }
+
+                }
+            }
+        }
+    </script>
+</div>
+
+</body>
+</html>

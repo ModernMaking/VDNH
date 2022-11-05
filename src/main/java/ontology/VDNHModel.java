@@ -8,9 +8,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.apache.jena.ontology.OntModelSpec.OWL_MEM_MICRO_RULE_INF;
@@ -269,6 +267,115 @@ public class VDNHModel {
         }
         return result;
     }
+
+    public HashMap<String,HashMap<String,Double>> getTagSimilarityHeatMap()
+    {
+        HashMap<String,HashMap<String,Double>> res = new HashMap<>();
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
+                "SELECT ?name1 ?name2 ?sim " +
+                "WHERE { " +
+                "?tag1 a to:InterestTag . "+
+                "?tag1 to:hasName ?name1 . "+
+                "?tag2 a to:InterestTag . "+
+                "?tag2 to:hasName ?name2 . "+
+                "?s a to:TagSimilarity . "+
+                "?s to:hasTag1 ?tag1 ."+
+                "?s to:hasTag2 ?tag2 ."+
+                "?s to:hasSimilarity ?sim ."+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        while (rs.hasNext())
+        {
+            QuerySolution qs = rs.next();
+            String name1 = qs.getLiteral("name1").getString();
+            String name2 = qs.getLiteral("name2").getString();
+            Double sim = qs.getLiteral("sim").getDouble();
+            if (!res.containsKey(name1))
+                res.put(name1, new HashMap<>());
+            res.get(name1).put(name2,sim);
+        }
+        return res;
+    }
+
+
+
+    public List<String> findRouteAsPlaceIdsBetweenPlaces(String placeId1, String placeId2)
+    {
+       List<List<List<String>>> search = new ArrayList<>();
+
+       List<List<String>> firstLevel = new ArrayList<>();
+       List<String> simplePath = new ArrayList<>();
+       simplePath.add(placeId1);
+       firstLevel.add(simplePath);
+       search.add(firstLevel);
+
+        Set<String> visited = new HashSet<>();
+        visited.add(placeId1);
+
+       int level = 0;
+       while (level<300)
+       {
+           level++;
+           List<List<String>> currLevel = new ArrayList<>();
+           search.add(currLevel);
+           List<List<String>> prevLevel = search.get(level-1);
+
+           for (List<String> path: prevLevel)
+           {
+               String lastPoint = path.get(path.size()-1);
+               String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                       "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                       "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
+                       "SELECT ?id2 " +
+                       "WHERE { " +
+                       "?place a mo:Place . "+
+                       "?place mo:hasID \""+lastPoint+"\" . "+
+                       "?place mo:hasLatitude ?lat . "+
+                       "?place mo:hasLongitude ?lon . "+
+                       "?dist a mo:Distance ."+
+                       "?dist mo:startsFrom ?place ."+
+                       "?dist mo:finishesTo ?place2 . "+
+                       "?place2 mo:hasID ?id2 . "+
+                       "?place2 mo:hasLatitude ?lat2 . "+
+                       "?place2 mo:hasLongitude ?lon2 . "+
+
+                       "}";
+               Query query = QueryFactory.create(queryString);
+               QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+               ResultSet rs = qExec.execSelect();
+               while (rs.hasNext())
+               {
+                   QuerySolution qs = rs.next();
+                   String id2 = qs.getLiteral("id2").getString();
+                   List<String> path2 = new ArrayList<>(path);//.subList(0, path.size()-1);
+
+
+                   if (!visited.contains(id2) && !path2.contains(id2))
+                   {
+                       visited.add(id2);
+                       path2.add(id2);
+                       currLevel.add(path2);
+                       if (id2.equals(placeId2))
+                           return path2;
+                   }
+
+               }
+           }
+
+
+
+       }
+
+
+
+        return new ArrayList<>();
+    }
+
+
 
     protected org.apache.jena.rdf.model.Model readModel(String modelFile)
     {

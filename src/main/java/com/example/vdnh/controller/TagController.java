@@ -17,4 +17,10 @@ public class TagController {
     {
         return VDNHModel.getModel().getAllInterestTags();
     }
+
+    @GetMapping("/map")
+    public HashMap<String,HashMap<String,Double>> similarityMap()
+    {
+        return VDNHModel.getModel().getTagSimilarityHeatMap();
+    }
 }

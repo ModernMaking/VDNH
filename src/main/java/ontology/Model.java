@@ -345,7 +345,7 @@ public class Model {
         calcAllDistances();
         addTagsSimilarities();
         addBusRoutes();
-        //calcNearestBusStations();
+        calcNearestBusStations();
         ontologyModel.write(System.out);
     }
 
@@ -630,6 +630,17 @@ public class Model {
                 calcAllDistances(s);
             }
         });
+
+        for (String placeId1 : distances.keySet())
+        {
+            for (String placeId2: distances.get(placeId1).keySet())
+            {
+                Resource place1 = places.get(placeId1);
+                Resource place2 = places.get(placeId2);
+                addDistance(place1,place2,distances.get(placeId1).get(placeId2));
+            }
+        }
+
         System.out.println(distances);
     }
 
