@@ -269,6 +269,49 @@ public class VDNHModel {
         return result;
     }
 
+    public List<String> findPlacesSimilarTo(String placeId)
+    {
+        List<String> placeIds = new ArrayList<>();
+
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
+
+
+
+                "SELECT ?id2  (SUM(?sim)/COUNT(?sim) as ?msim)" +
+                "WHERE { " +
+                "?place1 a mo:Place . "+
+                "?place1 mo:hasID \""+placeId+"\" . "+
+                "?place1 to:hasInterestTag ?tag1 . "+
+                "?place2 a mo:Place . "+
+                "?place2 mo:hasID ?id2 ."+
+                "?place2  to:hasInterestTag ?tag2."+
+                "?s a to:TagSimilarity . "+
+                "?s to:hasTag1 ?tag1 ."+
+                "?s to:hasTag2 ?tag2 ."+
+                "?s to:hasSimilarity ?sim ."+
+                //"FILTER(?sim>0.4)"+
+                //"FILTER (?tag to:hasID \"10\" ) "+
+                //filterString + //"FILTER (?tag to:hasID  ) . "+
+                "}"+
+                //"FILTER(?msim>0.4) "+
+                "GROUP BY ?id2";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        while (rs.hasNext())
+        {
+            QuerySolution qs = rs.next();
+            String id = qs.getLiteral("id2").getString();
+            Double msim = qs.getLiteral("msim").getDouble();
+            if (msim>0.4)
+                placeIds.add(id);
+        }
+
+        return placeIds;
+    }
+
     public HashMap<String,HashMap<String,Double>> getTagSimilarityHeatMap()
     {
         HashMap<String,HashMap<String,Double>> res = new HashMap<>();
@@ -301,8 +344,6 @@ public class VDNHModel {
         }
         return res;
     }
-
-
 
     public List<String> findRouteAsPlaceIdsBetweenPlaces(String placeId1, String placeId2)
     {
