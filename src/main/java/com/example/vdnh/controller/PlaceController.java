@@ -266,6 +266,20 @@ public class PlaceController {
         return places;
     }
 
+    @GetMapping("/walkPath")
+    public List<Place> getPathFromTo(String from, String to)
+    {
+        List<Place> places = new ArrayList<>();
+        List<String> ids = VDNHModel.getModel().findRouteAsPlaceIdsBetweenPlaces(from,to);
+        ids.forEach(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                places.add(placeRepository.findById(Long.parseLong(s)).get());
+            }
+        });
+        return places;
+    }
+
     //!!! Получить погоду на заданный день
     public HashMap<String,String> getWeather(Date date)
     {

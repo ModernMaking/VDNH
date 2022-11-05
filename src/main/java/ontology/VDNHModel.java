@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -366,15 +367,21 @@ public class VDNHModel {
                }
            }
 
-
-
        }
-
-
 
         return new ArrayList<>();
     }
 
+    public class RouteNode
+    {
+        private LocalDateTime startDateTime;
+        private LocalDateTime finishDateTime;
+        private String placeIdStart;
+        private String placeIdFinish;
+        private List<String> otherPlaces;
+        private int durationMins;
+        private int totalMins;
+    }
 
 
     protected org.apache.jena.rdf.model.Model readModel(String modelFile)
