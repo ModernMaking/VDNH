@@ -423,7 +423,14 @@ public class VDNHModel {
 
         List<List<RouteNode>> firstLevelNodes = new ArrayList<>();
         List<RouteNode> nodes = new ArrayList<>();
-        RouteNode routeNode = new RouteNode(startDateTime,startDateTime,placeId1,placeId2,null,0,0,"");
+
+        Resource place1 = findPlaceById(placeId1);
+        Resource place2 = findPlaceById(placeId2);
+
+        String name1 = place1.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getString();
+        String name2 = place2.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getString();
+
+        RouteNode routeNode = new RouteNode(startDateTime,startDateTime,placeId1,placeId2,null,0,0,"Вы пройдете мимо "+name1+" ; "+name2);
         nodes.add(routeNode);
         firstLevelNodes.add(nodes);
         searchNodes.add(firstLevelNodes);
@@ -453,18 +460,20 @@ public class VDNHModel {
                String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
                        "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
                        "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
-                       "SELECT ?id2 ?len ?lat ?lon ?lat2 ?lon2 " +
+                       "SELECT ?id2 ?len ?lat ?lon ?lat2 ?lon2 ?name ?name2 " +
                        "WHERE { " +
                        "?place a mo:Place . "+
                        "?place mo:hasID \""+lastPoint+"\" . "+
                        "?place mo:hasLatitude ?lat . "+
                        "?place mo:hasLongitude ?lon . "+
+                       "?place mo:hasName ?name . "+
                        "?dist a mo:Distance ."+
                        "?dist mo:startsFrom ?place ."+
                        "?dist mo:finishesTo ?place2 . "+
                        "?place2 mo:hasID ?id2 . "+
                        "?place2 mo:hasLatitude ?lat2 . "+
                        "?place2 mo:hasLongitude ?lon2 . "+
+                       "?place2 mo:hasName ?name2 . "+
                        "?dist mo:hasLength ?len ."+
 
                        "}";
@@ -480,6 +489,8 @@ public class VDNHModel {
                    double latitude2 = qs.getLiteral("lat2").getDouble();
                    double longitude1 = qs.getLiteral("lon").getDouble();
                    double longitude2 = qs.getLiteral("lon2").getDouble();
+                   String pName1 = qs.getLiteral("name").getString();
+                   String pName2 = qs.getLiteral("name2").getString();
                    List<String> path2 = new ArrayList<>(path);//.subList(0, path.size()-1);
                     List<RouteNode> nodePath2 = new ArrayList<>(nodePath);
 
@@ -492,7 +503,7 @@ public class VDNHModel {
                        double time = dist/50;
                        int lastTotalMins = nodePath.get(nodePath2.size()-1).getTotalMins();
                         LocalDateTime lastFinishDateTime = nodePath2.get(nodePath2.size()-1).getFinishDateTime();
-                       RouteNode routeNode1 = new RouteNode(lastFinishDateTime,lastFinishDateTime.plusSeconds((long) (time*60)),path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, (int)(lastTotalMins+(int)time), "",latitude1,latitude2,longitude1,longitude2);
+                       RouteNode routeNode1 = new RouteNode(lastFinishDateTime,lastFinishDateTime.plusSeconds((long) (time*60)),path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, (int)(lastTotalMins+(int)time), "Вы пройдете мимо: "+pName1+" ; "+pName2,latitude1,latitude2,longitude1,longitude2);
                        nodePath2.add(routeNode1);
                         currLevelNodes.add(nodePath2);
                        if (id2.equals(placeId2))
@@ -607,7 +618,11 @@ public class VDNHModel {
             if (false)
                 continue;
             LocalDateTime finishTime = currDateTime.plusMinutes(30);
-            RouteNode rn = new RouteNode(currDateTime,finishTime,placeId,placeId,null,30,0,"Остановка с заходом в павильон");
+
+            Resource placeResource = findPlaceById(placeId);
+            String name = placeResource.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getString();
+
+            RouteNode rn = new RouteNode(currDateTime,finishTime,placeId,placeId,null,30,0,"Остановка с заходом в павильон "+name+" ID:"+placeId);
             routeNodeList.add(rn);
             prevPlaceId = placeId;
 
@@ -618,6 +633,22 @@ public class VDNHModel {
         }
 
         return routeNodeList;
+    }
+
+    private Resource findPlaceById(String placeId)
+    {
+        String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                "SELECT ?p " +
+                "WHERE { " +
+                "?p a mo:Place ."+
+                "?p mo:hasID \""+placeId+"\" ."+
+                "}";
+        Query query = QueryFactory.create(queryString);
+        QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+        ResultSet rs = qExec.execSelect();
+        QuerySolution qs = rs.next();
+        return qs.getResource("p");
     }
 
     /**
