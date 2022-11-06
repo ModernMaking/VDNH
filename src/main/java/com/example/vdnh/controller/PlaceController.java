@@ -189,14 +189,42 @@ public class PlaceController {
         return VDNHModel.getModel().placeIdsByTags(tagIds); // findInterestedPlaces(tagIds);
     }
 
+    @PostMapping("/calcRoute")
+    public String calcRouteNode(@RequestBody String requestParams)
+    {
+        System.out.println(requestParams);
+        Gson gson = new Gson();
+        JsonArray arr = gson.fromJson(requestParams,JsonObject.class).get("tagIds").getAsJsonArray();
+        List<Integer> tagIds = new ArrayList<>();
+
+        arr.forEach(new Consumer<JsonElement>() {
+            @Override
+            public void accept(JsonElement jsonElement) {
+                tagIds.add(jsonElement.getAsInt());
+            }
+        });
+        String start = gson.fromJson(requestParams,JsonObject.class).get("start").getAsString();
+        String finish = gson.fromJson(requestParams,JsonObject.class).get("finish").getAsString();
+        LocalDateTime startDateTime = LocalDateTime.parse(start);
+        LocalDateTime finishDateTime = LocalDateTime.parse(finish);
+        List<VDNHModel.RouteNode> routeNodeList = VDNHModel.getModel().getRouteByTagsAndTimeLimit(tagIds,startDateTime,finishDateTime);
+
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+        routeNodeList.forEach(new Consumer<VDNHModel.RouteNode>() {
+            @Override
+            public void accept(VDNHModel.RouteNode routeNode) {
+                jsonObjectList.add(new JSONObject(routeNode));
+            }
+        });
+        //JsonArray jsonObject = new JSONArray(routeNodeList);
+        return jsonObjectList.toString();
+    }
+
     @PostMapping("/order/byTags")
     public List<Place> getPlaceIdsOrderByTags(@RequestBody String requestParams)
     {
         System.out.println(requestParams);
-
-
         Gson gson = new Gson();
-
         JsonArray arr = gson.fromJson(requestParams,JsonObject.class).get("tagIds").getAsJsonArray();
         List<Integer> tagIds = new ArrayList<>();
 
@@ -207,7 +235,7 @@ public class PlaceController {
             }
         });
 
-        List<String> placeIds = Model.getModel().placeOrder(Model.getModel().findInterestedPlaces(tagIds));
+        List<String> placeIds = VDNHModel.getModel().placeOrder(VDNHModel.getModel().placeIdsByTags(tagIds));
         List<Place> places = new ArrayList<>();
         for (String placeId: placeIds) {
             places.add(placeRepository.findById(Long.parseLong(placeId)).get());
@@ -249,6 +277,14 @@ public class PlaceController {
             res.add(currRoute);
         }
         return res;
+    }
+
+    @GetMapping("/busRouteBetweenPlaces")
+    public String getBusRouteBetweenPlaces(String placeId1, String placeId2)
+    {
+        VDNHModel.RouteNode route = VDNHModel.getModel().findBusRoute(placeId1,placeId2);
+        JSONObject jsonObject = new JSONObject(route);
+        return jsonObject.toString();
     }
 
     @GetMapping("/reachable")

@@ -1,5 +1,6 @@
 package ontology;
 
+import io.swagger.models.auth.In;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
@@ -447,11 +448,105 @@ public class VDNHModel {
         return new ArrayList<>();
     }
 
+    public List<String> placeOrder(List<String> placesIds)
+    {
+        HashMap<String,HashMap<String,Double>> distances = new HashMap<>();
+        List<String> order = new ArrayList<>();
+
+        for (String placeId1: placesIds)
+        {
+            for (String placeId2: placesIds)
+            {
+                if (placeId1 != placeId2)
+                {
+                    String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
+                            "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
+                            "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
+                            "SELECT DISTINCT ?lon1 ?lon2 ?lat1 ?lat2 " +
+                            "WHERE { " +
+                            "?place1 a mo:Place . "+
+                            "?place1 mo:hasID \""+placeId1+"\" . "+
+                            "?place2 a mo:Place . "+
+                            "?place2 mo:hasID \""+placeId2+"\" . "+
+                            "?place1 mo:hasLatitude ?lat1 ."+
+                            "?place1 mo:hasLongitude ?lon1 ."+
+                            "?place2 mo:hasLatitude ?lat2 ."+
+                            "?place2 mo:hasLongitude ?lon2 ."+
+                            "}";
+                    Query query = QueryFactory.create(queryString);
+                    QueryExecution qExec = QueryExecutionFactory.create(query, ontologyModel);
+                    ResultSet rs = qExec.execSelect();
+                    QuerySolution qs = rs.next();
+                    double longitude1 = qs.getLiteral("lon1").getDouble();
+                    double longitude2 = qs.getLiteral("lon2").getDouble();
+                    double latitude1 = qs.getLiteral("lat1").getDouble();
+                    double latitude2 = qs.getLiteral("lat2").getDouble();
+
+                    if (!distances.containsKey(placeId1))
+                    {
+                        distances.put(placeId1,new HashMap<>());
+                    }
+                    double dist = Math.sqrt(Math.pow(latitude1-latitude2,2) + Math.pow(longitude1-longitude2,2));
+                    distances.get(placeId1).put(placeId2,dist);
+                }
+            }
+        }
+        order.add(placesIds.get(0));
+        for (int i=0; i<order.size(); i++)
+        {
+            String placeId1 = order.get(i);
+            HashMap<String,Double> distTo = distances.get(placeId1);
+            double min = -1;
+            String nextPlace = "";
+            for (String placeId2: distTo.keySet())
+            {
+                if (!order.contains(placeId2) && (min == -1 || min>distTo.get(placeId2)))
+                {
+                    min = distTo.get(placeId2);
+                    nextPlace = placeId2;
+                }
+            }
+            if (nextPlace!="")
+                order.add(nextPlace);
+        }
+
+        return order;
+    }
+
     /*public List<RouteNode> getRouteTrack(List<String> placeIds, LocalDateTime startDateTime, double speed)
     {
 
     }*/
 
+    public List<RouteNode> getRouteByTagsAndTimeLimit(List<Integer> tagIds, LocalDateTime startDateTime, LocalDateTime finishDateTime)
+    {
+        List<RouteNode> routeNodeList = new ArrayList<>();
+        List<String> interestingPlacesOrder = placeOrder(placeIdsByTags(tagIds));
+        LocalDateTime currDateTime = startDateTime;
+        String prevPlaceId = "";
+        for (String placeId : interestingPlacesOrder)
+        {
+            if (!prevPlaceId.equals(""))
+            {
+                List<RouteNode> walk = findRouteAsPlaceIdsBetweenPlaces(prevPlaceId,placeId,currDateTime);
+                routeNodeList.addAll(walk);
+                currDateTime = walk.get(walk.size()-1).getFinishDateTime();
+            }
+            if (false)
+                continue;
+            LocalDateTime finishTime = currDateTime.plusMinutes(30);
+            RouteNode rn = new RouteNode(currDateTime,finishTime,placeId,placeId,null,30,0,"Остановка с заходом в павильон");
+            routeNodeList.add(rn);
+            prevPlaceId = placeId;
+
+            currDateTime = finishTime;
+            if (currDateTime.isAfter(finishDateTime.minusMinutes(20)))
+                break;
+
+        }
+
+        return routeNodeList;
+    }
     public class RouteNode implements Serializable
     {
         public LocalDateTime getStartDateTime() {
@@ -507,6 +602,7 @@ public class VDNHModel {
             this.description = description;
         }
     }
+
 
 
     protected org.apache.jena.rdf.model.Model readModel(String modelFile)

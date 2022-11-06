@@ -16,10 +16,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 
 @SpringBootApplication(scanBasePackageClasses = {PlaceRepository.class})
 @EntityScan(basePackageClasses = {Place.class, EventTable.class, EventPlace.class})
@@ -28,14 +25,29 @@ import java.io.UnsupportedEncodingException;
 @Configuration
 public class VdnhApplication {
 
-    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-       /*try {
-            Model.getModel().writeToFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+    public static void main(String[] args) throws IOException {
 
-        SpringApplication.run(VdnhApplication.class, args);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print("Enter String");
+        String s = br.readLine();
+
+        switch (s)
+        {
+            case "GENERATOR":
+                try {
+                    Model.getModel().writeToFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "SERVER":
+                SpringApplication.run(VdnhApplication.class, args);
+                break;
+        }
+
+
+
+
     }
 
 }
