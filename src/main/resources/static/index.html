@@ -2,77 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Главная</title>
+
+    <!--    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,700&display=swap" rel="stylesheet">
+
     <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU" type="text/javascript">
     </script>
+
+    <script type="text/javascript" src="../../../script.js"></script>
+
 </head>
 <body>
-<div id="map" style="width: 800px; height: 600px"></div>
-<script type="text/javascript">
-    // Функция ymaps.ready() будет вызвана, когда
-    // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
-    ymaps.ready(init);
-    function init(){
-        // Создание карты.
-        var myMap = new ymaps.Map("map", {
-            // Координаты центра карты.
-            // Порядок по умолчанию: «широта, долгота».
-            // Чтобы не определять координаты центра карты вручную,
-            // воспользуйтесь инструментом Определение координат.
-            center: [55.76, 37.64],
-            // Уровень масштабирования. Допустимые значения:
-            // от 0 (весь мир) до 19.
-            zoom: 11
-        });
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="card">
+                <a href="calcRoute.html">
+                    <p class="card-title" style="font-size: 24pt;">
+                        Построение маршрутов
+                    </p>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="card">
+                <a href="tagHeatMap.html">
+                    <p class="card-title" style="font-size: 24pt;">
+                        Тепловая карта тегов
+                    </p>
+                </a>
+            </div>
+        </div>
 
 
-            var xhr = new XMLHttpRequest()
-            xhr.open("POST", "../place/order/byTags")
-            xhr.responseType = "json"
-            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        <div class="col-sm-3">
+            <div class="card">
+                <a href="byTags.html">
+                    <p class="card-title" style="font-size: 24pt;">
+                        Места по тегам
+                    </p>
+                </a>
+            </div>
+        </div>
 
-            var body = JSON.stringify({"tagIds":[8,10]})
+        <div class="col-sm-3">
+            <div class="card">
+                <a href="near_station.html">
+                    <p class="card-title" style="font-size: 24pt;">
+                        Места по ближайшим автобусным остановкам
+                    </p>
+                </a>
+            </div>
+        </div>
 
-            xhr.send(body)
-            xhr.onload = () => {
-                for (let key in xhr.response) {
-                    let obj = xhr.response[key]
-                    console.log(obj)
-                    myMap.geoObjects.add(new ymaps.Placemark([obj.latitude, obj.longitude], {
-                        balloonContent: 'ID: ' + obj.id + " name: " + obj.title,
-                        iconContent: obj.id,
-                        preset: 'islands#blackStretchyIcon'
-                    }))
-                }
-            }
-
-
-/*
-            var xhr1 = new XMLHttpRequest()
-            xhr1.open("GET", "../place/allLines")
-            xhr1.responseType = "json"
-            xhr1.send()
-            xhr1.onload = () => {
-                for (let key in xhr1.response) {
-                    let obj = xhr1.response[key]
-                    console.log(obj)
-                    myMap.geoObjects.add(new ymaps.GeoObject({
-                        geometry: {
-                            // Тип геометрии - "Ломаная линия".
-                            type: "LineString",
-                            // Указываем координаты вершин ломаной.
-                            coordinates: [
-                                [obj[0], obj[1]],
-                                [obj[2], obj[3]]
-                            ]
-                        }
-                    }) )
-                }
-            }*/
-
-
-    }
-</script>
+    </div>
+</div>
 
 </body>
 </html>
