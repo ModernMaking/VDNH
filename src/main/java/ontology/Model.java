@@ -71,7 +71,7 @@ public class Model {
     {
         JSONParser parser = null;
         try {
-            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() + "../classes/tags.json"));
+            parser = new JSONParser( new FileInputStream(new File("src/main/resources/tags.json")) );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -108,7 +108,7 @@ public class Model {
     {
         JSONParser parser = null;
         try {
-            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() +"../classes/export.json"));
+            parser = new JSONParser(new FileInputStream(new File("src/main/resources/export.json")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -185,7 +185,7 @@ public class Model {
     {
         JSONParser parser = null;
         try {
-            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() +"../classes/place_tags.json"));
+            parser = new JSONParser(new FileInputStream(new File("src/main/resources/place_tags.json")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -226,7 +226,7 @@ public class Model {
     {
         JSONParser parser = null;
         try {
-            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() +"../classes/similarities.json"));
+            parser = new JSONParser(new FileInputStream(new File("src/main/resources/similarities.json")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -259,7 +259,7 @@ public class Model {
     {
         JSONParser parser = null;
         try {
-            parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() +"../classes/bus_routes.json"));
+            parser = new JSONParser( new FileInputStream(new File("src/main/resources/bus_routes.json")) );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
