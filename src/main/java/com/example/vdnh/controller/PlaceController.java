@@ -267,17 +267,17 @@ public class PlaceController {
     }
 
     @GetMapping("/walkPath")
-    public List<Place> getPathFromTo(String from, String to)
+    public List<VDNHModel.RouteNode> getPathFromTo(String from, String to)
     {
         List<Place> places = new ArrayList<>();
-        List<String> ids = VDNHModel.getModel().findRouteAsPlaceIdsBetweenPlaces(from,to);
-        ids.forEach(new Consumer<String>() {
+        List<VDNHModel.RouteNode> ids = VDNHModel.getModel().findRouteAsPlaceIdsBetweenPlaces(from,to,LocalDateTime.now());
+        /*ids.forEach(new Consumer<String>() {
             @Override
             public void accept(String s) {
                 places.add(placeRepository.findById(Long.parseLong(s)).get());
             }
-        });
-        return places;
+        });*/
+        return ids;
     }
 
     @GetMapping("/similarTo")

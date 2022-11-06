@@ -474,7 +474,7 @@ public class Model {
         dist.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.STARTS_FROM), place1);
         dist.addProperty(ontologyModel.getObjectProperty(ObjectProperties.Map.FINISHES_TO), place2);
         dist.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LENGTH), ontologyModel.createTypedLiteral(distance));
-        dist.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LENGTH),ontologyModel.createTypedLiteral(dist));
+        //dist.addProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_LENGTH),ontologyModel.createTypedLiteral(dist));
     }
 
     public List<String> findInterestedPlaces(List<Integer> interestTagIds)

@@ -6,8 +6,10 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
+import org.springframework.boot.jackson.JsonComponent;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -52,7 +54,7 @@ public class VDNHModel {
         //return true;
     }
 
-    public HashMap<String,String> findBusRoute(String placeId1, String placeId2)
+    public RouteNode findBusRoute(String placeId1, String placeId2)
     {
         String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
                 "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
@@ -89,11 +91,15 @@ public class VDNHModel {
         Resource brn1 = qs.getResource("brn1");
         Resource brn2 = qs.getResource("brn2");
 
+        List<String> internalBusStopIds = new ArrayList<>();
+
         int counter = 0;
         while (brn1 != brn2 && brn1 != null)
         {
             Resource busStop = brn1.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION));
             String name = busStop.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_NAME)).getString();
+            String busStopId = busStop.getProperty(ontologyModel.getDatatypeProperty(DataProperties.Map.HAS_ID)).getString();
+            internalBusStopIds.add(busStopId);
             result.put("point"+(++counter),name);
             brn1 = brn1.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_NEXT_BUS_ROUTE_NODE));
 
@@ -102,7 +108,9 @@ public class VDNHModel {
                 break;
         }
 
-        return result;
+        RouteNode routeNode = new RouteNode(LocalDateTime.now(),LocalDateTime.now(),placeId1,placeId2,internalBusStopIds,0,0,"");
+
+        return routeNode;
     }
 
     public List<String> findNearestPlacesToStation(String stationId)
@@ -345,8 +353,9 @@ public class VDNHModel {
         return res;
     }
 
-    public List<String> findRouteAsPlaceIdsBetweenPlaces(String placeId1, String placeId2)
+    public List<VDNHModel.RouteNode> findRouteAsPlaceIdsBetweenPlaces(String placeId1, String placeId2, LocalDateTime startDateTime)
     {
+        List<List<List<RouteNode>>> searchNodes = new ArrayList<>();
        List<List<List<String>>> search = new ArrayList<>();
 
        List<List<String>> firstLevel = new ArrayList<>();
@@ -354,6 +363,13 @@ public class VDNHModel {
        simplePath.add(placeId1);
        firstLevel.add(simplePath);
        search.add(firstLevel);
+
+        List<List<RouteNode>> firstLevelNodes = new ArrayList<>();
+        List<RouteNode> nodes = new ArrayList<>();
+        RouteNode routeNode = new RouteNode(startDateTime,startDateTime,placeId1,placeId2,null,0,0,"");
+        nodes.add(routeNode);
+        firstLevelNodes.add(nodes);
+        searchNodes.add(firstLevelNodes);
 
         Set<String> visited = new HashSet<>();
         visited.add(placeId1);
@@ -366,13 +382,21 @@ public class VDNHModel {
            search.add(currLevel);
            List<List<String>> prevLevel = search.get(level-1);
 
+           List<List<RouteNode>> currLevelNodes = new ArrayList<>();
+           searchNodes.add(currLevelNodes);
+
+           List<List<RouteNode>> prevLevelNodes = searchNodes.get(level-1);
+
+           int pathIndex = 0;
+
            for (List<String> path: prevLevel)
            {
+               List<RouteNode> nodePath = prevLevelNodes.get(pathIndex);
                String lastPoint = path.get(path.size()-1);
                String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
                        "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
                        "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
-                       "SELECT ?id2 " +
+                       "SELECT ?id2 ?len " +
                        "WHERE { " +
                        "?place a mo:Place . "+
                        "?place mo:hasID \""+lastPoint+"\" . "+
@@ -384,6 +408,7 @@ public class VDNHModel {
                        "?place2 mo:hasID ?id2 . "+
                        "?place2 mo:hasLatitude ?lat2 . "+
                        "?place2 mo:hasLongitude ?lon2 . "+
+                       "?dist mo:hasLength ?len ."+
 
                        "}";
                Query query = QueryFactory.create(queryString);
@@ -393,19 +418,27 @@ public class VDNHModel {
                {
                    QuerySolution qs = rs.next();
                    String id2 = qs.getLiteral("id2").getString();
+                   Double dist = qs.getLiteral("len").getDouble();
                    List<String> path2 = new ArrayList<>(path);//.subList(0, path.size()-1);
-
+                    List<RouteNode> nodePath2 = new ArrayList<>(nodePath);
 
                    if (!visited.contains(id2) && !path2.contains(id2))
                    {
                        visited.add(id2);
                        path2.add(id2);
                        currLevel.add(path2);
+
+                       double time = dist/50;
+
+                       RouteNode routeNode1 = new RouteNode(startDateTime,startDateTime,path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, 0, "");
+                       nodePath2.add(routeNode1);
+                        currLevelNodes.add(nodePath2);
                        if (id2.equals(placeId2))
-                           return path2;
+                           return nodePath2;//path2;
                    }
 
                }
+               pathIndex++;
            }
 
        }
@@ -413,8 +446,45 @@ public class VDNHModel {
         return new ArrayList<>();
     }
 
-    public class RouteNode
+    /*public List<RouteNode> getRouteTrack(List<String> placeIds, LocalDateTime startDateTime, double speed)
     {
+
+    }*/
+
+    public class RouteNode implements Serializable
+    {
+        public LocalDateTime getStartDateTime() {
+            return startDateTime;
+        }
+
+        public LocalDateTime getFinishDateTime() {
+            return finishDateTime;
+        }
+
+        public String getPlaceIdStart() {
+            return placeIdStart;
+        }
+
+        public String getPlaceIdFinish() {
+            return placeIdFinish;
+        }
+
+        public List<String> getOtherPlaces() {
+            return otherPlaces;
+        }
+
+        public int getDurationMins() {
+            return durationMins;
+        }
+
+        public int getTotalMins() {
+            return totalMins;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
         private LocalDateTime startDateTime;
         private LocalDateTime finishDateTime;
         private String placeIdStart;
@@ -422,6 +492,19 @@ public class VDNHModel {
         private List<String> otherPlaces;
         private int durationMins;
         private int totalMins;
+        private String description;
+
+
+        public RouteNode(LocalDateTime startDateTime, LocalDateTime finishDateTime, String placeIdStart, String placeIdFinish, List<String> otherPlaces, int durationMins, int totalMins, String description) {
+            this.startDateTime = startDateTime;
+            this.finishDateTime = finishDateTime;
+            this.placeIdStart = placeIdStart;
+            this.placeIdFinish = placeIdFinish;
+            this.otherPlaces = otherPlaces;
+            this.durationMins = durationMins;
+            this.totalMins = totalMins;
+            this.description = description;
+        }
     }
 
 

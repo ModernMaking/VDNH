@@ -29,6 +29,8 @@
                 let td = document.createElement("td")
                 td.innerText=key1
                 tr1.appendChild(td)
+                td.style.transform = "rotate(90deg);"
+                td.style.fontSize = "20pt"
                 tags.push(key1)
             }
 
@@ -46,7 +48,7 @@
                 {
                     //let td = document.createElement("td")
                     //td.innerText = obj[key1][key2]
-                    dict[key1][key2] = obj[key1][key2]
+                    dict[key1][key2] = roundNumber(obj[key1][key2],2)
                    // tr.appendChild(td)
                 }
             }
@@ -55,6 +57,7 @@
             {
                 let tr = document.createElement("tr")
                 let td1 = document.createElement("td")
+                td1.style.fontSize = "20pt"
                 td1.innerText = tags[i]
                 td1.style.borderStyle = "dotted"
                 td1.style.borderColor="#CCCCCC"
@@ -65,23 +68,34 @@
                     let td = document.createElement("td")
                     td.style.borderStyle = "dotted"
                     td.style.borderColor="#CCCCCC"
+                    td.style.fontSize = "20pt"
                     td.innerText = dict[tags[i]][tags[j]]
+
                     tr.appendChild(td)
                     let k = dict[tags[i]][tags[j]]
                     if (k!==undefined)
                     {
                         if (k<0)
-                            td.style.backgroundColor = '#e79f9f'
+                            td.style.backgroundColor = '#ee5656'
                         if (k>=0 && k<0.2)
-                            td.style.backgroundColor = '#f1dcac'
+                            td.style.backgroundColor = '#f8c141'
                         if (k>=0.2 && k<0.5)
-                            td.style.backgroundColor = '#b3f1b3'
-                        if (k>=0.5)
-                            td.style.backgroundColor = '#68f183'
+                            td.style.backgroundColor = '#73e773'
+                        if (k>=0.5 && k<0.9)
+                            td.style.backgroundColor = '#1ef349'
+                        if (k>=0.9)
+                            td.style.backgroundColor = '#078f21'
                     }
 
                 }
             }
+        }
+
+        function
+        roundNumber(number, digits) {
+            var multiple = Math.pow(10, digits);
+            var rndedNum = Math.round(number * multiple) / multiple;
+            return rndedNum;
         }
     </script>
 </div>

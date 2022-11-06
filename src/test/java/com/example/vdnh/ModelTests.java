@@ -14,6 +14,7 @@ import org.junit.platform.commons.annotation.Testable;
 import java.beans.Customizer;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -129,7 +130,7 @@ public class ModelTests {
         System.out.println(m.hasBusRouteBetweenPlaces("361","362"));
         System.out.println(m.findBusRoute("354","363"));
         List<String> places = new ArrayList<>();
-        System.out.println(m.findRouteAsPlaceIdsBetweenPlaces("354","20186"));
+        System.out.println(m.findRouteAsPlaceIdsBetweenPlaces("354","20186", LocalDateTime.now()));
     }
 
 
