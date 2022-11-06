@@ -72,6 +72,8 @@ public class PlaceController {
 
         JSONParser parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() + "../classes/export.json"));
 
+        System.out.println("GET PATH: "+getClass().getResource("/").getPath());
+
 
         Object obj = parser.parse();//parseObject();//parse();//parse(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
         String jsonInString = new Gson().toJson(obj);
