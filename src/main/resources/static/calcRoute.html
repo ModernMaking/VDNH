@@ -3,70 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <!--    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,700&display=swap" rel="stylesheet">
     <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU" type="text/javascript">
     </script>
 </head>
 <body>
 
 <div id="answer">
-
 </div>
-<div id="map" style="width: 800px; height: 600px"></div>
-<div id="trace">
-
+<div class="row" id="tags"></div>
+<div class="row">
+    <button class="btn btn-primary" onclick="buildMap(interestTags); return false;">Построить</button>
 </div>
+<div class="row">
+    <div class="col-sm" id="map" style="width: 800px; height: 600px"></div>
+    <div class="col-sm" id="trace" style="height: 600px; overflow-y: scroll">
+    </div>
+</div>
+
 
 <script>
-    var myMap;
-    ymaps.ready(init);
-    function init(){
-        myMap = new ymaps.Map("map", {
-            // Координаты центра карты.
-            // Порядок по умолчанию: «широта, долгота».
-            // Чтобы не определять координаты центра карты вручную,
-            // воспользуйтесь инструментом Определение координат.
-            center: [55.830577444399, 37.623344382017],
-            // Уровень масштабирования. Допустимые значения:
-            // от 0 (весь мир) до 19.
-            zoom: 15
-        });
-    }
 
-    let xhr = new XMLHttpRequest()
-    xhr.open("POST","../place/calcRoute")
-    body = {
-        tagIds: [1,10],
-        start: "2022-11-07T09:00:00",
-        finish: "2022-11-07T12:00:00"
-    }
-    xhr.send(JSON.stringify(body))
-    xhr.responseType = "json"
-    xhr.onload = () => {
-        document.getElementById("answer").innerText = xhr.response
-        let trace = document.getElementById("trace")
-        let arr = xhr.response
-        for (let key in arr)
-        {
-            let b = document.createElement("b")
-            b.innerText = arr[key]["description"]
-            let p = document.createElement("p")
-            p.innerText = "\nНачало участка пути: "+arr[key]["startDateTime"]+"\n Конец участка пути: "+arr[key]["finishDateTime"]
+    let interestTags = []
+    let addTags = (element) => {
 
-            let div = document.createElement("div")
-            div.style.backgroundColor="#CCCCCC"
+        interestTags = []
 
-            div.append(b)
-            div.append(p)
-            trace.append(div)
+        let xhr = new XMLHttpRequest()
+        xhr.open("GET","../../tag/interest/all")
+        xhr.responseType = "json"
+        xhr.send()
+        xhr.onload = () => {
+            let tags = xhr.response
 
-            myMap.geoObjects.add(new ymaps.Placemark([arr[key]["latitude1"], arr[key]["longitude1"]], {
-                balloonContent: 'R',
-                iconContent: '#'+key,
-                preset: 'islands#blackStretchyIcon'
-            }))
+            //let select = document.createElement("select")
+            //select.setAttribute("multiple","multiple")
 
+            let block = document.createElement("div")
+
+            for (let tagKey in tags)
+            {
+
+
+                let button = document.createElement("button")
+                button.innerText = tags[tagKey]
+                block.appendChild(button)
+                button.onclick = () => {
+                    if (!interestTags.includes(tagKey)) {
+                        interestTags.push(tagKey)
+                        button.style.backgroundColor = "#3f0202"
+                    }
+                    else
+                    {
+                        button.style.backgroundColor = "#CCCCCC"
+                        var index = interestTags.indexOf(tagKey);
+                        if (index >= 0) {
+                            interestTags.splice( index, 1 );
+                        }
+                    }
+                }
+
+            }
+            element.appendChild(block)
         }
     }
+    function  buildMap(tagIdsArray) {
+
+
+        //document.getElementById("map").removeChild()
+        var myMap;
+        ymaps.ready(init);
+
+        function init() {
+            myMap = new ymaps.Map("map", {
+                // Координаты центра карты.
+                // Порядок по умолчанию: «широта, долгота».
+                // Чтобы не определять координаты центра карты вручную,
+                // воспользуйтесь инструментом Определение координат.
+                center: [55.830577444399, 37.623344382017],
+                // Уровень масштабирования. Допустимые значения:
+                // от 0 (весь мир) до 19.
+                zoom: 15
+            });
+        }
+
+        let xhr = new XMLHttpRequest()
+        xhr.open("POST", "../place/calcRoute")
+        body = {
+            tagIds: tagIdsArray,//[1,10],
+            start: "2022-11-07T09:00:00",
+            finish: "2022-11-07T12:00:00"
+        }
+        xhr.send(JSON.stringify(body))
+        xhr.responseType = "json"
+        xhr.onload = () => {
+            document.getElementById("answer").innerText = xhr.response
+            let trace = document.getElementById("trace")
+            let arr = xhr.response
+            for (let key in arr) {
+                let b = document.createElement("b")
+                b.innerText = arr[key]["description"]
+                let p = document.createElement("p")
+                let startDateTime = (arr[key]["startDateTime"].split("T"))[1]
+                let finishDateTime = (arr[key]["finishDateTime"].split("T"))[1]
+                p.innerText = "\nНачало участка пути: " + startDateTime + "\n Конец участка пути: " + finishDateTime
+
+                let div = document.createElement("div")
+                div.style.backgroundColor = "#CCCCCC"
+
+                div.append(b)
+                div.append(p)
+                trace.append(div)
+
+                let placeMark = new ymaps.Placemark([arr[key]["latitude1"], arr[key]["longitude1"]], {
+                    balloonContent: 'R',
+                    iconContent: '#' + key,
+                    preset: 'islands#blackStretchyIcon'
+                })
+                myMap.geoObjects.add(placeMark)
+                div.onclick = () => {
+                    placeMark.properties._data.preset = 'islands#icon'
+                    placeMark.properties._data.iconColor = '#0000FF'
+                }
+
+            }
+        }
+    }
+    addTags(document.getElementById("tags"))
+    //buildMap(interestTags)
 </script>
 
 </body>
