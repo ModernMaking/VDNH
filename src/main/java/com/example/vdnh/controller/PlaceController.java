@@ -267,7 +267,7 @@ public class PlaceController {
     }
 
     @GetMapping("/walkPath")
-    public List<VDNHModel.RouteNode> getPathFromTo(String from, String to)
+    public String getPathFromTo(String from, String to)
     {
         List<Place> places = new ArrayList<>();
         List<VDNHModel.RouteNode> ids = VDNHModel.getModel().findRouteAsPlaceIdsBetweenPlaces(from,to,LocalDateTime.now());
@@ -277,7 +277,10 @@ public class PlaceController {
                 places.add(placeRepository.findById(Long.parseLong(s)).get());
             }
         });*/
-        return ids;
+
+        JSONArray jsonArray = new JSONArray(ids);
+        String jsonArrayString = jsonArray.toString();
+        return jsonArrayString;
     }
 
     @GetMapping("/similarTo")

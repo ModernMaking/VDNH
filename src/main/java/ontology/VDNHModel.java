@@ -429,8 +429,9 @@ public class VDNHModel {
                        currLevel.add(path2);
 
                        double time = dist/50;
-
-                       RouteNode routeNode1 = new RouteNode(startDateTime,startDateTime,path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, 0, "");
+                       int lastTotalMins = nodePath.get(nodePath2.size()-1).getTotalMins();
+                        LocalDateTime lastFinishDateTime = nodePath2.get(nodePath2.size()-1).getFinishDateTime();
+                       RouteNode routeNode1 = new RouteNode(lastFinishDateTime,lastFinishDateTime.plusSeconds((long) (time*60)),path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, (int)(lastTotalMins+(int)time), "");
                        nodePath2.add(routeNode1);
                         currLevelNodes.add(nodePath2);
                        if (id2.equals(placeId2))
