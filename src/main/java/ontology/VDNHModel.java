@@ -35,6 +35,12 @@ public class VDNHModel {
         ontologyModel = ModelFactory.createOntologyModel(OWL_MEM_MICRO_RULE_INF,readModel(ONTOLOGY_FILE));
     }
 
+    /**
+     * Возможно ли добраться на автобусе от места1 до места2
+     * @param placeId1 Место 1 (ID)
+     * @param placeId2 Место 2 (ID)
+     * @return
+     */
     public boolean hasBusRouteBetweenPlaces(String placeId1, String placeId2)
     {
         String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
@@ -55,6 +61,12 @@ public class VDNHModel {
         //return true;
     }
 
+    /**
+     * Найти автобусный маршрут между место1 и место2
+     * @param placeId1
+     * @param placeId2
+     * @return
+     */
     public RouteNode findBusRoute(String placeId1, String placeId2)
     {
         String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
@@ -114,6 +126,11 @@ public class VDNHModel {
         return routeNode;
     }
 
+    /**
+     * Найти ближайшие места от остановки автобуса
+     * @param stationId
+     * @return
+     */
     public List<String> findNearestPlacesToStation(String stationId)
     {
         List<String> places = new ArrayList<>();
@@ -139,6 +156,10 @@ public class VDNHModel {
         return places;
     }
 
+    /**
+     * Список всех маршрутов автобусов
+     * @return
+     */
     public List<List<String>> findAllBusRoutes()
     {
         List<List<String>> routeList = new ArrayList<>();
@@ -174,12 +195,22 @@ public class VDNHModel {
         return routeList;
     }
 
+    /**
+     * Автобусная остановка для точки маршрута
+     * @param brn
+     * @return
+     */
     private String getBusStationIdForBRN(Resource brn)
     {
         Resource station = brn.getPropertyResourceValue(ontologyModel.getObjectProperty(ObjectProperties.Map.HAS_ACCORDING_STATION));
         return station.getProperty(ontologyModel.getDatatypeProperty((DataProperties.Map.HAS_ID))).getString();
     }
 
+    /**
+     * Найти все станции, до которых можно доехать со станции ...
+     * @param id ИД станции
+     * @return
+     */
     public List<String> getAllReachableStationsFrom(String id)
     {
         List<String> stations = new ArrayList<>();
@@ -207,6 +238,10 @@ public class VDNHModel {
         return stations;
     }
 
+    /**
+     * Список всех тегов, связанных с интересами
+     * @return
+     */
     public HashMap<Integer, String> getAllInterestTags()
     {
         HashMap<Integer, String> res = new HashMap<>();
@@ -233,6 +268,11 @@ public class VDNHModel {
         return res;
     }
 
+    /**
+     * Места по тегам
+     * @param tagIds ИД тегов (список)
+     * @return
+     */
     public List<String> placeIdsByTags(List<Integer> tagIds)
     {
         List<String> result = new ArrayList<>();
@@ -278,6 +318,11 @@ public class VDNHModel {
         return result;
     }
 
+    /**
+     * Найти места, похожие на ...
+     * @param placeId ИД места
+     * @return
+     */
     public List<String> findPlacesSimilarTo(String placeId)
     {
         List<String> placeIds = new ArrayList<>();
@@ -321,6 +366,10 @@ public class VDNHModel {
         return placeIds;
     }
 
+    /**
+     * Тепловая карта схожести тегов
+     * @return
+     */
     public HashMap<String,HashMap<String,Double>> getTagSimilarityHeatMap()
     {
         HashMap<String,HashMap<String,Double>> res = new HashMap<>();
@@ -354,6 +403,13 @@ public class VDNHModel {
         return res;
     }
 
+    /**
+     * Найти пешеходный маршрут между двумя местами
+     * @param placeId1 место1
+     * @param placeId2 место2
+     * @param startDateTime Дата/время начала пути
+     * @return
+     */
     public List<VDNHModel.RouteNode> findRouteAsPlaceIdsBetweenPlaces(String placeId1, String placeId2, LocalDateTime startDateTime)
     {
         List<List<List<RouteNode>>> searchNodes = new ArrayList<>();
@@ -452,6 +508,11 @@ public class VDNHModel {
         return new ArrayList<>();
     }
 
+    /**
+     * Порядок посещения мест
+     * @param placesIds
+     * @return
+     */
     public List<String> placeOrder(List<String> placesIds)
     {
         HashMap<String,HashMap<String,Double>> distances = new HashMap<>();
@@ -522,6 +583,13 @@ public class VDNHModel {
 
     }*/
 
+    /**
+     * Построить маршрут с учетом интересов и временных ограничений
+     * @param tagIds ИД тегов (список)
+     * @param startDateTime время/дата начала пути
+     * @param finishDateTime время/дата конца пути
+     * @return
+     */
     public List<RouteNode> getRouteByTagsAndTimeLimit(List<Integer> tagIds, LocalDateTime startDateTime, LocalDateTime finishDateTime)
     {
         List<RouteNode> routeNodeList = new ArrayList<>();
@@ -551,6 +619,10 @@ public class VDNHModel {
 
         return routeNodeList;
     }
+
+    /**
+     * Класс, означающий точку маршрута (стоянка в павильоне, передвижение...)
+     */
     public class RouteNode implements Serializable
     {
         public LocalDateTime getStartDateTime() {
@@ -642,7 +714,11 @@ public class VDNHModel {
     }
 
 
-
+    /**
+     * Прочитать модель из RDF-файла
+     * @param modelFile
+     * @return
+     */
     protected org.apache.jena.rdf.model.Model readModel(String modelFile)
     {
         // create an empty model
