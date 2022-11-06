@@ -397,7 +397,7 @@ public class VDNHModel {
                String queryString = "PREFIX mo: <http://www.semanticweb.org/dns/ontologies/2022/8/map-ontology#> " +
                        "PREFIX ro: <http://www.semanticweb.org/dns/ontologies/2022/8/route#> " +
                        "PREFIX to: <http://www.semanticweb.org/dns/ontologies/2022/9/tag-ontology#> "+
-                       "SELECT ?id2 ?len " +
+                       "SELECT ?id2 ?len ?lat ?lon ?lat2 ?lon2 " +
                        "WHERE { " +
                        "?place a mo:Place . "+
                        "?place mo:hasID \""+lastPoint+"\" . "+
@@ -420,6 +420,10 @@ public class VDNHModel {
                    QuerySolution qs = rs.next();
                    String id2 = qs.getLiteral("id2").getString();
                    Double dist = qs.getLiteral("len").getDouble();
+                   double latitude1 = qs.getLiteral("lat").getDouble();
+                   double latitude2 = qs.getLiteral("lat2").getDouble();
+                   double longitude1 = qs.getLiteral("lon").getDouble();
+                   double longitude2 = qs.getLiteral("lon2").getDouble();
                    List<String> path2 = new ArrayList<>(path);//.subList(0, path.size()-1);
                     List<RouteNode> nodePath2 = new ArrayList<>(nodePath);
 
@@ -432,7 +436,7 @@ public class VDNHModel {
                        double time = dist/50;
                        int lastTotalMins = nodePath.get(nodePath2.size()-1).getTotalMins();
                         LocalDateTime lastFinishDateTime = nodePath2.get(nodePath2.size()-1).getFinishDateTime();
-                       RouteNode routeNode1 = new RouteNode(lastFinishDateTime,lastFinishDateTime.plusSeconds((long) (time*60)),path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, (int)(lastTotalMins+(int)time), "");
+                       RouteNode routeNode1 = new RouteNode(lastFinishDateTime,lastFinishDateTime.plusSeconds((long) (time*60)),path2.get(path2.size()-2), path2.get(path2.size()-1), null, (int)time, (int)(lastTotalMins+(int)time), "",latitude1,latitude2,longitude1,longitude2);
                        nodePath2.add(routeNode1);
                         currLevelNodes.add(nodePath2);
                        if (id2.equals(placeId2))
@@ -589,7 +593,41 @@ public class VDNHModel {
         private int durationMins;
         private int totalMins;
         private String description;
+        private double latitude1;
+        private double latitude2;
+        private double longitude1;
+        private double longitude2;
 
+        public double getLatitude1() {
+            return latitude1;
+        }
+
+        public double getLatitude2() {
+            return latitude2;
+        }
+
+        public double getLongitude1() {
+            return longitude1;
+        }
+
+        public double getLongitude2() {
+            return longitude2;
+        }
+
+        public RouteNode(LocalDateTime startDateTime, LocalDateTime finishDateTime, String placeIdStart, String placeIdFinish, List<String> otherPlaces, int durationMins, int totalMins, String description, double latitude1, double latitude2, double longitude1, double longitude2) {
+            this.startDateTime = startDateTime;
+            this.finishDateTime = finishDateTime;
+            this.placeIdStart = placeIdStart;
+            this.placeIdFinish = placeIdFinish;
+            this.otherPlaces = otherPlaces;
+            this.durationMins = durationMins;
+            this.totalMins = totalMins;
+            this.description = description;
+            this.latitude1 = latitude1;
+            this.latitude2 = latitude2;
+            this.longitude1 = longitude1;
+            this.longitude2 = longitude2;
+        }
 
         public RouteNode(LocalDateTime startDateTime, LocalDateTime finishDateTime, String placeIdStart, String placeIdFinish, List<String> otherPlaces, int durationMins, int totalMins, String description) {
             this.startDateTime = startDateTime;

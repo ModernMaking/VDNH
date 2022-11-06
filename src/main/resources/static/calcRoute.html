@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU" type="text/javascript">
+    </script>
+</head>
+<body>
+
+<div id="answer">
+
+</div>
+<div id="map" style="width: 800px; height: 600px"></div>
+<div id="trace">
+
+</div>
+
+<script>
+    var myMap;
+    ymaps.ready(init);
+    function init(){
+        myMap = new ymaps.Map("map", {
+            // Координаты центра карты.
+            // Порядок по умолчанию: «широта, долгота».
+            // Чтобы не определять координаты центра карты вручную,
+            // воспользуйтесь инструментом Определение координат.
+            center: [55.830577444399, 37.623344382017],
+            // Уровень масштабирования. Допустимые значения:
+            // от 0 (весь мир) до 19.
+            zoom: 15
+        });
+    }
+
+    let xhr = new XMLHttpRequest()
+    xhr.open("POST","../place/calcRoute")
+    body = {
+        tagIds: [1,10],
+        start: "2022-11-07T09:00:00",
+        finish: "2022-11-07T12:00:00"
+    }
+    xhr.send(JSON.stringify(body))
+    xhr.responseType = "json"
+    xhr.onload = () => {
+        document.getElementById("answer").innerText = xhr.response
+        let trace = document.getElementById("trace")
+        let arr = xhr.response
+        for (let key in arr)
+        {
+            let b = document.createElement("b")
+            b.innerText = arr[key]["description"]
+            let p = document.createElement("p")
+            p.innerText = "\nНачало участка пути: "+arr[key]["startDateTime"]+"\n Конец участка пути: "+arr[key]["finishDateTime"]
+
+            let div = document.createElement("div")
+            div.style.backgroundColor="#CCCCCC"
+
+            div.append(b)
+            div.append(p)
+            trace.append(div)
+
+            myMap.geoObjects.add(new ymaps.Placemark([arr[key]["latitude1"], arr[key]["longitude1"]], {
+                balloonContent: 'R',
+                iconContent: '#'+key,
+                preset: 'islands#blackStretchyIcon'
+            }))
+
+        }
+    }
+</script>
+
+</body>
+</html>
