@@ -26,10 +26,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 import java.beans.Customizer;
@@ -70,7 +67,7 @@ public class PlaceController {
 
         System.out.println("GET PATH: "+getClass().getResource("/").getPath());
 
-        JSONParser parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() + "../classes/export.json"));
+        JSONParser parser = new JSONParser( new FileInputStream(new File("src/main/resources/export.json")) );//new JSONParser(new FileReader(getClass().getResource("/").getPath() + "../classes/export.json"));
 
 
 

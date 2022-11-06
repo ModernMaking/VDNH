@@ -14,6 +14,8 @@ import org.json.JSONObject;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.function.Consumer;
@@ -32,7 +34,7 @@ public class EventController {
 
     @RequestMapping("/addAll")
     public void addAll() throws FileNotFoundException, ParseException {
-        JSONParser parser = new JSONParser(new FileReader(getClass().getResource("/").getPath() + "../classes/export.json"));
+        JSONParser parser = new JSONParser( new FileInputStream(new File("src/main/resources/export.json")) );
 
 
         Object obj = parser.parse();//parseObject();//parse();//parse(new FileReader("C:\\Users\\DNS\\IdeaProjects\\VDNH\\src\\main\\resources\\export.json"));
